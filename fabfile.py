@@ -97,7 +97,6 @@ def install_requirements():
 
 def migrate_database():
     with cd(get_project_root()):
-        run_python("manage.py syncdb")
         run_python("manage.py migrate")
 
 
