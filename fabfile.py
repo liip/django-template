@@ -144,7 +144,7 @@ def set_setting(setting_key, value=None, description=None):
     if value is None:
         value = prompt("Please provide value for setting %s: " % setting_key)
 
-    with cd(os.path.join(get_project_root(), 'envdir/local')):
+    with cd(os.path.join(get_project_root(), 'envdir')):
         put(StringIO.StringIO(value), setting_key)
 
 
@@ -207,7 +207,7 @@ def fetch_db(destination='.'):
     require('root')
 
     with nested(cd(get_project_root()), quiet()):
-        db_credentials = run('cat envdir/local/DATABASE_URL')
+        db_credentials = run('cat envdir/DATABASE_URL')
     db_credentials_dict = dj_database_url.parse(db_credentials)
 
     if not is_supported_db_engine(db_credentials_dict['ENGINE']):
@@ -239,7 +239,7 @@ def import_db(dump_file=None):
     The dump must be a gzipped SQL dump. If the dump_file parameter is not set,
     the database will be dumped and retrieved from the remote host.
     """
-    with open('envdir/local/DATABASE_URL', 'r') as db_credentials_file:
+    with open('envdir/DATABASE_URL', 'r') as db_credentials_file:
         db_credentials = db_credentials_file.read()
     db_credentials_dict = dj_database_url.parse(db_credentials)
 
