@@ -3,3 +3,4 @@
 django-debug-toolbar
 django-extensions
 pip-tools
+tox
