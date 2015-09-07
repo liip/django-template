@@ -17,3 +17,4 @@ py==1.4.30                # via tox
 six==1.9.0                # via django-extensions, pip-tools
 sqlparse==0.1.16          # via django-debug-toolbar
 virtualenv==13.1.2        # via tox
+werkzeug==0.10.4
