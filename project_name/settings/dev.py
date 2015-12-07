@@ -16,12 +16,3 @@ INTERNAL_IPS = ('127.0.0.1',)
 MIDDLEWARE_CLASSES += (
     'debug_toolbar.middleware.DebugToolbarMiddleware',
 )
-
-####################
-# COMPASS SETTINGS #
-####################
-
-# The config for SASS is in config.rb
-RUNPROCESS_PROCESSES = (
-    ('compass', 'watch', '--poll'),
-)

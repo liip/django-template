@@ -7,8 +7,6 @@ import dj_database_url
 from . import get_env_variable
 from .. import get_project_root_path
 
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-
 gettext = lambda s: s
 
 # Full filesystem path to the project.
@@ -18,7 +16,7 @@ WSGI_APPLICATION = '{{ project_name }}.wsgi.application'
 
 # Internationalization
 LANGUAGE_CODE = 'en'
-TIME_ZONE = 'UTC'
+TIME_ZONE = None
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
@@ -26,22 +24,6 @@ USE_TZ = True
 LANGUAGES = (
     ('en', gettext('en')),
 )
-
-# Local time zone for this installation. Choices can be found here:
-# http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
-# although not all choices may be available on all operating systems.
-# On Unix systems, a value of None will cause Django to use the same
-# timezone as the operating system.
-# If running in a Windows environment this must be set to the same as your
-# system time zone.
-TIME_ZONE = None
-
-# If you set this to True, Django will use timezone-aware datetimes.
-USE_TZ = True
-
-# Language code for this installation. All choices can be found here:
-# http://www.i18nguy.com/unicode/language-identifiers.html
-LANGUAGE_CODE = "en"
 
 # A boolean that turns on/off debug mode. When set to ``True``, stack traces
 # are displayed for error pages. Should always be set to ``False`` in
