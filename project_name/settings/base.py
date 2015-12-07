@@ -29,7 +29,6 @@ LANGUAGES = (
 # are displayed for error pages. Should always be set to ``False`` in
 # production. Best set to ``True`` in dev.py
 DEBUG = False
-TEMPLATE_DEBUG = DEBUG
 
 # Whether a user's session cookie expires when the Web browser is closed.
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
@@ -38,13 +37,6 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 #   * See debug comments, when DEBUG is true
 #   * Receive x-headers
 INTERNAL_IPS = ("127.0.0.1",)
-
-# List of callables that know how to import templates from various sources.
-TEMPLATE_LOADERS = (
-    'django.template.loaders.filesystem.Loader',
-    'django.template.loaders.app_directories.Loader',
-    'django.template.loaders.eggs.Loader'
-)
 
 # List of finder classes that know how to find static files in
 # various locations.
@@ -110,13 +102,31 @@ MEDIA_ROOT = get_env_variable('MEDIA_ROOT', '/tmp/static/media')
 # Package/module name to import the root urlpatterns from for the project.
 ROOT_URLCONF = "%s.urls" % PROJECT_DIRNAME
 
-# Put strings here, like "/home/html/django_templates"
-# or "C:/www/django/templates".
-# Always use forward slashes, even on Windows.
-# Don't forget to use absolute paths, not relative paths.
-TEMPLATE_DIRS = (
-    os.path.join(BASE_DIR, '{{ project_name }}', 'templates'),
-)
+TEMPLATES = [{
+    'BACKEND': 'django.template.backends.django.DjangoTemplates',
+    'DIRS': [
+        os.path.join(BASE_DIR, '{{ project_name }}', 'templates'),
+    ],
+    'OPTIONS': {
+        'context_processors': [
+            'django.contrib.auth.context_processors.auth',
+            'django.contrib.messages.context_processors.messages',
+            'django.template.context_processors.i18n',
+            'django.template.context_processors.debug',
+            'django.template.context_processors.request',
+            'django.template.context_processors.media',
+            'django.template.context_processors.csrf',
+            'django.template.context_processors.tz',
+            'django.template.context_processors.static',
+        ],
+        'loaders': [
+            ('django.template.loaders.cached.Loader', [
+                'django.template.loaders.filesystem.Loader',
+                'django.template.loaders.app_directories.Loader',
+            ]),
+        ]
+    },
+}]
 
 
 ################
@@ -130,21 +140,6 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.staticfiles',
     'django.contrib.messages',
-)
-
-# List of processors used by RequestContext to populate the context.
-# Each one should be a callable that takes the request object as its
-# only parameter and returns a dictionary to add to the context.
-TEMPLATE_CONTEXT_PROCESSORS = (
-    'django.contrib.auth.context_processors.auth',
-    'django.contrib.messages.context_processors.messages',
-    'django.core.context_processors.i18n',
-    'django.core.context_processors.debug',
-    'django.core.context_processors.request',
-    'django.core.context_processors.media',
-    'django.core.context_processors.csrf',
-    'django.core.context_processors.tz',
-    'django.core.context_processors.static',
 )
 
 # List of middleware classes to use. Order is important; in the request phase,
