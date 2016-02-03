@@ -4,7 +4,7 @@ Django project template
 To create a new project using this template, do the following (replace
 `myproject` with the name of your project):
 
-    pip install cookiecutter
+    pip install cookiecutter pip-tools
     cookiecutter gh:liip/django-template
 
 Then run the following commands to get you project up and running:
