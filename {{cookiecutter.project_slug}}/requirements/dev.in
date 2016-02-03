@@ -1,4 +1,4 @@
--r base.txt
+-r base.in
 
 django-debug-toolbar
 django-extensions
