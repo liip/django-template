@@ -12,7 +12,7 @@ gettext = lambda s: s
 # Full filesystem path to the project.
 BASE_DIR = get_project_root_path()
 
-WSGI_APPLICATION = '{{ project_name }}.wsgi.application'
+WSGI_APPLICATION = '{{ cookiecutter.project_slug }}.wsgi.application'
 
 # Internationalization
 LANGUAGE_CODE = 'en'
@@ -68,7 +68,7 @@ DATABASES = {
 #########
 
 # Name of the directory for the project.
-PROJECT_DIRNAME = '{{ project_name }}'
+PROJECT_DIRNAME = '{{ cookiecutter.project_slug }}'
 
 # Every cache key will get prefixed with this value - here we set it to
 # the name of the directory the project is in to try and use something
@@ -105,7 +105,7 @@ ROOT_URLCONF = "%s.urls" % PROJECT_DIRNAME
 TEMPLATES = [{
     'BACKEND': 'django.template.backends.django.DjangoTemplates',
     'DIRS': [
-        os.path.join(BASE_DIR, '{{ project_name }}', 'templates'),
+        os.path.join(BASE_DIR, '{{ cookiecutter.project_slug }}', 'templates'),
     ],
     'OPTIONS': {
         'context_processors': [

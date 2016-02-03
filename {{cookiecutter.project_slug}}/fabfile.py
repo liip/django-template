@@ -19,7 +19,7 @@ from gitric import api as gitric
 # particular environment will be made available in the `env` variable.
 ENVIRONMENTS = {
     'prod': {
-        'root': '/var/www/{{ project_name }}/prod/',
+        'root': '/var/www/{{ cookiecutter.project_slug }}/prod/',
         'hosts': ['root@myhost'],
         # You can set settings that will be automatically deployed when running
         # the `bootstrap` command
@@ -28,7 +28,7 @@ ENVIRONMENTS = {
         # }
     },
     'dev': {
-        'root': '/var/www/{{ project_name }}/staging/',
+        'root': '/var/www/{{ cookiecutter.project_slug }}/staging/',
         'hosts': ['root@myhost'],
         # You can set settings that will be automatically deployed when running
         # the `bootstrap` command
@@ -38,7 +38,7 @@ ENVIRONMENTS = {
     }
 }
 
-env.project_name = '{{ project_name }}'
+env.project_name = '{{ cookiecutter.project_slug }}'
 
 
 def git_push(commit):

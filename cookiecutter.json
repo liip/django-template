@@ -1,0 +1,5 @@
+{
+	"project_name": "My project",
+	"project_slug": "{{ cookiecutter.project_name.lower().replace(' ', '_') }}",
+	"use_pypi_deployment_with_travis": "y"
+}
