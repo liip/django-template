@@ -1,13 +1,12 @@
 Django project template
 ==========================
 
-To create a new project using this template, do the following (replace
-`myproject` with the name of your project):
+To create a new project using this template, do the following:
 
     pip install cookiecutter pip-tools
     cookiecutter gh:liip/django-template
 
-Then run the following commands to get you project up and running:
+Then run the following commands to get your project up and running:
 
     vagrant up
     vagrant ssh
