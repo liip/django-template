@@ -16,6 +16,28 @@ following commands to get you project up and running:
 
 Go to http://my-project.lo/ and start hacking!
 
+Troubleshooting
+---------------
+
+If you get the following error when running `cookiecutter`:
+
+```
+Traceback (most recent call last):
+  File "/home/me/.virtualenvs/tmp-1081dbf5557421f7/bin/pip-compile", line 7, in <module>
+    from piptools.scripts.compile import cli
+  File "/home/me/.virtualenvs/tmp-1081dbf5557421f7/local/lib/python2.7/site-packages/piptools/scripts/compile.py", line 16, in <module>
+    from ..repositories import PyPIRepository
+  File "/home/me/.virtualenvs/tmp-1081dbf5557421f7/local/lib/python2.7/site-packages/piptools/repositories/__init__.py", line 2, in <module>
+    from .pypi import PyPIRepository
+  File "/home/me/.virtualenvs/tmp-1081dbf5557421f7/local/lib/python2.7/site-packages/piptools/repositories/pypi.py", line 10, in <module>
+    from pip.req.req_set import RequirementSet
+ImportError: No module named req_set
+```
+
+That's because your `pip` version is too old. Upgrade it either with your
+package manager, or by running `pip install --upgrade pip`.
+
+
 Deploying your site
 -------------------
 
