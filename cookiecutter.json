@@ -1,5 +1,4 @@
 {
-	"project_name": "My project",
-	"project_slug": "{{ cookiecutter.project_name.lower().replace(' ', '_') }}",
+	"project_slug": "my_project",
     "use_drifter": "y"
 }
