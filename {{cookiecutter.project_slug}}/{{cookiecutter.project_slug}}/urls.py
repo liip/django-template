@@ -12,7 +12,9 @@ urlpatterns = [
 
 # This is only needed when using runserver.
 if settings.DEBUG:
+    import debug_toolbar
     urlpatterns = [
         url(r'^media/(?P<path>.*)$', django.views.static.serve,
             {'document_root': settings.MEDIA_ROOT, 'show_indexes': True}),
+        url(r'^__debug__/', include(debug_toolbar.urls)),
     ] + staticfiles_urlpatterns() + urlpatterns
