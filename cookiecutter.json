@@ -1,4 +1,5 @@
 {
-	"project_slug": "my_project",
-    "use_drifter": "y"
+    "project_slug": "my_project",
+    "use_drifter": "y",
+    "use_flake8_hook": "y"
 }
