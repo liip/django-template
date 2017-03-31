@@ -5,7 +5,6 @@ import subprocess
 
 
 def install_drifter():
-    os.system('git init .')
     os.system('curl -sS https://raw.githubusercontent.com/liip/drifter/master/install.sh | /bin/bash')
 
 
@@ -59,6 +58,8 @@ def pip_compile(path):
 
 
 if __name__ == '__main__':
+    os.system('git init .')
+
     if '{{ cookiecutter.use_drifter }}' == 'y':
         install_drifter()
         patch_parameters('virtualization/parameters.yml')
