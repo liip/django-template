@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
 import os
+import stat
 import subprocess
 
 
 def install_drifter():
-    os.system('git init .')
     os.system('curl -sS https://raw.githubusercontent.com/liip/drifter/master/install.sh | /bin/bash')
 
 
@@ -53,16 +53,35 @@ def patch_playbook(path):
         f.write(''.join(patched_lines))
 
 
+def install_flake8_hook():
+    path = '.git/hooks/pre-commit'
+    with open(path, 'w') as hook:
+        lines = [
+            "#!/bin/bash\n",
+            "flake8 apps/ {{ cookiecutter.project_slug }}\n"
+        ]
+        hook.writelines(lines)
+
+    mode = (stat.S_IRWXU | stat.S_IRGRP | stat.S_IXGRP | stat.S_IRGRP |
+            stat.S_IROTH | stat.S_IXOTH)  # this is -rwxr-xr-x
+    os.chmod(path, mode)
+
+
 def pip_compile(path):
     with open('/dev/null', 'wb') as f:
         subprocess.call(['pip-compile', path], stdout=f)
 
 
 if __name__ == '__main__':
+    os.system('git init .')
+
     if '{{ cookiecutter.use_drifter }}' == 'y':
         install_drifter()
         patch_parameters('virtualization/parameters.yml')
         patch_playbook('virtualization/playbook.yml')
+
+    if '{{ cookiecutter.use_flake8_hook }}' == 'y':
+        install_flake8_hook()
 
     pip_compile('requirements/dev.in')
     pip_compile('requirements/base.in')
