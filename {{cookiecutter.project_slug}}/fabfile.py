@@ -1,18 +1,13 @@
-from contextlib import nested
-from datetime import datetime
 import os
 import random
 import StringIO
+from datetime import datetime
 
 import dj_database_url
-from fabric.api import (
-    cd, env, execute, get, local, put, require, run, settings, shell_env,
-    task
-)
+from fabric.api import cd, env, execute, get, local, put, require, run, settings, shell_env, task
 from fabric.context_managers import quiet
 from fabric.operations import prompt
 from gitric import api as gitric
-
 
 # This is the definition of your environments. Every item of the ENVIRONMENTS
 # dict will be made available as a fabric task and the properties you put in a
@@ -41,6 +36,17 @@ ENVIRONMENTS = {
 env.project_name = '{{ cookiecutter.project_slug }}'
 
 
+def ls(path):
+    """
+    Return the list of the files in the given directory, omitting . and ...
+    """
+    with cd(path), quiet():
+        files = run('for i in *; do echo $i; done')
+        files_list = files.replace('\r', '').split('\n')
+
+    return files_list
+
+
 def git_push(commit):
     """
     Push the current tree to the remote server and reset the remote git
@@ -63,6 +69,13 @@ def get_virtualenv_root():
     Return the path to the virtual environment on the remote server.
     """
     return os.path.join(env.root, 'venv')
+
+
+def get_backups_root():
+    """
+    Return the path to the backups directory on the remote server.
+    """
+    return os.path.join(env.root, 'backups')
 
 
 def run_in_virtualenv(cmd, args):
@@ -120,7 +133,9 @@ def generate_secret_key():
     """
     Generate a random secret key, suitable to be used as a SECRET_KEY setting.
     """
-    return ''.join([random.SystemRandom().choice('abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)') for i in range(50)])
+    return ''.join(
+        [random.SystemRandom().choice('abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)') for i in range(50)]
+    )
 
 
 def create_structure():
@@ -131,7 +146,16 @@ def create_structure():
 
     with cd(env.root):
         run('mkdir -p static backups')
-        run('virtualenv venv')
+        run('python3 -m venv venv')
+
+
+@task
+def sync_settings():
+    """
+    Copy all settings defined in the environment to the server.
+    """
+    for setting, value in env.settings.items():
+        set_setting(setting, value=value)
 
 
 def set_setting(setting_key, value=None, description=None):
@@ -185,16 +209,56 @@ def bootstrap():
 
 
 @task
+def compile_assets():
+    local('npm install')
+    local('npm run build')
+    local(
+        "rsync -e 'ssh -p {port}' -r --exclude *.map --exclude *.swp static/ "
+        "{user}@{host}:{path}".format(host=env.host,
+                                      user=env.user,
+                                      port=env.port,
+                                      path=os.path.join(get_project_root(), 'static')))
+
+
+@task
 def deploy(tag):
     require('root', 'project_name')
 
-    execute(git_push, commit=tag)
+    execute(git_push, commit='@')
+    dump_db(get_backups_root())
 
     execute(install_requirements)
+    execute(compile_assets)
     execute(collect_static)
     execute(migrate_database)
 
     execute(restart_process)
+    execute(clean_old_database_backups, nb_backups_to_keep=10)
+
+
+def dump_db(destination):
+    """
+    Dump the database to the given directory and return the path to the file created. This creates a gzipped SQL file.
+    """
+    with cd(get_project_root()), quiet():
+        db_credentials = run('cat envdir/DATABASE_URL')
+    db_credentials_dict = dj_database_url.parse(db_credentials)
+
+    if not is_supported_db_engine(db_credentials_dict['ENGINE']):
+        raise NotImplementedError(
+            "The dump_db task doesn't support the remote database engine"
+        )
+
+    outfile = os.path.join(destination, datetime.now().strftime('%Y-%m-%d_%H%M%S.sql.gz'))
+
+    with shell_env(PGPASSWORD=db_credentials_dict['PASSWORD'].replace('$', '\$')):
+        run('pg_dump -O -x -h {host} -U {user} {db}|gzip > {outfile}'.format(
+            host=db_credentials_dict['HOST'],
+            user=db_credentials_dict['USER'],
+            db=db_credentials_dict['NAME'],
+            outfile=outfile))
+
+    return outfile
 
 
 @task
@@ -206,29 +270,11 @@ def fetch_db(destination='.'):
     """
     require('root')
 
-    with nested(cd(get_project_root()), quiet()):
-        db_credentials = run('cat envdir/DATABASE_URL')
-    db_credentials_dict = dj_database_url.parse(db_credentials)
+    dump_path = dump_db('~')
+    get(dump_path, destination)
+    run('rm %s' % dump_path)
 
-    if not is_supported_db_engine(db_credentials_dict['ENGINE']):
-        raise NotImplementedError(
-            "The fetch_db task doesn't support the remote database engine"
-        )
-
-    outfile = datetime.now().strftime('%Y-%m-%d_%H%M%S.sql.gz')
-    outfile_remote = os.path.join('~', outfile)
-
-    with shell_env(PGPASSWORD=db_credentials_dict['PASSWORD'].replace('$', '\$')):
-        run('pg_dump -O -x -h {host} -U {user} {db}|gzip > {outfile}'.format(
-            host=db_credentials_dict['HOST'],
-            user=db_credentials_dict['USER'],
-            db=db_credentials_dict['NAME'],
-            outfile=outfile_remote))
-
-    get(outfile_remote, destination)
-    run('rm %s' % outfile_remote)
-
-    return outfile
+    return os.path.basename(dump_path)
 
 
 @task
@@ -266,6 +312,25 @@ def import_db(dump_file=None):
         local('gunzip -c {db_dump}|psql -h {host} -U {user} {db}'.format(
             **db_info
         ))
+
+
+@task
+def clean_old_database_backups(nb_backups_to_keep):
+    """
+    Remove old database backups from the system and keep `nb_backups_to_keep`.
+    """
+    backups = ls(get_backups_root())
+    backups = sorted(backups, reverse=True)
+
+    if len(backups) > nb_backups_to_keep:
+        backups_to_delete = backups[nb_backups_to_keep:]
+
+        for backup_to_delete in backups_to_delete:
+            run('rm "%s"' % os.path.join(get_backups_root(), backup_to_delete))
+
+        print("%d backups deleted." % len(backups_to_delete))
+    else:
+        print("No backups to delete.")
 
 
 def is_supported_db_engine(engine):

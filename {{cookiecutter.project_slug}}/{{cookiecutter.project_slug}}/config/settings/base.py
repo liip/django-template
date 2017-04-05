@@ -1,5 +1,3 @@
-from __future__ import absolute_import, unicode_literals
-
 import os
 
 import dj_database_url
@@ -12,11 +10,9 @@ gettext = lambda s: s
 # Full filesystem path to the project.
 BASE_DIR = get_project_root_path()
 
-WSGI_APPLICATION = '{{ cookiecutter.project_slug }}.wsgi.application'
-
 # Internationalization
 LANGUAGE_CODE = 'en'
-TIME_ZONE = None
+TIME_ZONE = 'Europe/Zurich'
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
@@ -87,7 +83,7 @@ STATIC_URL = get_env_variable('STATIC_URL', '/static/')
 STATIC_ROOT = get_env_variable('STATIC_ROOT', '/tmp/static')
 
 STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, 'static'),
+    os.path.join(BASE_DIR, '{{ cookiecutter.project_slug }}', 'static'),
 )
 
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
@@ -100,7 +96,8 @@ MEDIA_URL = get_env_variable('MEDIA_URL', '/media/')
 MEDIA_ROOT = get_env_variable('MEDIA_ROOT', '/tmp/static/media')
 
 # Package/module name to import the root urlpatterns from for the project.
-ROOT_URLCONF = "%s.urls" % PROJECT_DIRNAME
+ROOT_URLCONF = "%s.config.urls" % PROJECT_DIRNAME
+WSGI_APPLICATION = '{{ cookiecutter.project_slug }}.config.wsgi.application'
 
 TEMPLATES = [{
     'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -154,3 +151,25 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
+
+###########
+# LOGGING #
+###########
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        '': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
+    },
+}
