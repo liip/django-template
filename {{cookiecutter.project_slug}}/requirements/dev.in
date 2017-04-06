@@ -5,3 +5,7 @@ django-extensions
 pip-tools
 tox
 werkzeug
+pytest
+pytest-cov
+pytest-django
+pytest-xdist
