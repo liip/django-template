@@ -30,7 +30,8 @@ def set_parameter(path, key, value):
 
 
 def patch_parameters(path):
-    set_parameter(path, 'django_pip_requirements', 'requirements/dev.txt')
+    set_parameter(path, 'pip_requirements', 'requirements/dev.txt')
+    set_parameter(path, 'pip_requirements_dir', 'requirements')
     set_parameter(path, 'project_name', '{{ cookiecutter.project_slug }}')
     set_parameter(path, 'database_name', '{{ cookiecutter.project_slug }}')
     set_parameter(path, 'hostname', "{{ cookiecutter.project_slug.replace('_', '-') }}.lo")
@@ -53,20 +54,11 @@ def patch_playbook(path):
         f.write(''.join(patched_lines))
 
 
-def pip_compile(path):
-    with open('/dev/null', 'wb') as f:
-        subprocess.call(['pip-compile', path], stdout=f)
-
-
 if __name__ == '__main__':
     if '{{ cookiecutter.use_drifter }}' == 'y':
         install_drifter()
         patch_parameters('virtualization/parameters.yml')
         patch_playbook('virtualization/playbook.yml')
-
-    pip_compile('requirements/dev.in')
-    pip_compile('requirements/base.in')
-    pip_compile('requirements/deploy.in')
 
     if '{{ cookiecutter.use_djangocms }}' == 'y':
         shutil.copyfile('{{ cookiecutter.project_slug }}/templates/base_cms.html', '{{ cookiecutter.project_slug }}/templates/base.html')
