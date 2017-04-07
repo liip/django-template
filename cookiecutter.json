@@ -1,4 +1,8 @@
 {
 	"project_slug": "my_project",
-    "use_drifter": "y"
+    "use_drifter": "y",
+    "use_djangocms": "n",
+    "_copy_without_render": [
+        "*.html"
+    ]
 }

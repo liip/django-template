@@ -5,3 +5,8 @@ django-extensions
 pip-tools
 tox
 werkzeug
+
+# Deployment requirements
+Fabric3
+dj-database-url
+gitric

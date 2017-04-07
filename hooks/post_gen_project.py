@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import os
-import subprocess
+import shutil
 
 
 def install_drifter():
@@ -67,3 +67,7 @@ if __name__ == '__main__':
     pip_compile('requirements/dev.in')
     pip_compile('requirements/base.in')
     pip_compile('requirements/deploy.in')
+
+    if '{{ cookiecutter.use_djangocms }}' == 'y':
+        shutil.copyfile('{{ cookiecutter.project_slug }}/templates/base_cms.html', '{{ cookiecutter.project_slug }}/templates/base.html')
+    os.remove('{{ cookiecutter.project_slug }}/templates/base_cms.html')

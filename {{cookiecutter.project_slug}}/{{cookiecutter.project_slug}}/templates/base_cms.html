@@ -1,0 +1,18 @@
+{% load cms_tags %}
+{% load sekizai_tags %}
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title></title>
+    {% render_block "css" %}
+  </head>
+  <body>
+    {% cms_toolbar %}
+    {% block body %}
+    It works!
+    {% endblock %}
+    {% render_block "js" %}
+  </body>
+</html>
