@@ -171,6 +171,8 @@ TEMPLATES = [{
 
 INSTALLED_APPS = (
     {% if cookiecutter.use_djangocms == 'y' -%}
+    'accounts',
+
     'djangocms_admin_style',
     'djangocms_text_ckeditor',
     'djangocms_link',
@@ -214,6 +216,13 @@ MIDDLEWARE_CLASSES = (
     'cms.middleware.language.LanguageCookieMiddleware',
     {%- endif %}
 )
+
+
+##################
+# AUTHENTICATION #
+##################
+AUTH_USER_MODEL = 'accounts.User'
+
 
 ###########
 # LOGGING #
