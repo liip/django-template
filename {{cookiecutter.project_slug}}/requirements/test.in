@@ -1,0 +1,6 @@
+-r dev.in
+
+pytest
+pytest-cov
+pytest-django
+pytest-xdist
