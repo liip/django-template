@@ -1,0 +1,5 @@
+__pycache__
+
+/envdir/*
+!/envdir/.gitkeep
+/.tox
