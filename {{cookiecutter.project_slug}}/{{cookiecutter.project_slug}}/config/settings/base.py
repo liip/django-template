@@ -151,6 +151,8 @@ INSTALLED_APPS = (
     'easy_thumbnails',
     'django.contrib.sites',
     {% endif %}
+
+    'django_admin_bootstrapped',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',

@@ -1,6 +1,7 @@
 dj-database-url
 Django
 psycopg2
+django-admin-bootstrapped
 
 {% if cookiecutter.use_djangocms == 'y' %}
 django-cms
