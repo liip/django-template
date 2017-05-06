@@ -1,5 +1,6 @@
--r dev.in
+-r base.in
 
+flake8
 pytest
 pytest-cov
 pytest-django
