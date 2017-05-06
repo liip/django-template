@@ -4,7 +4,6 @@ import sys
 
 from {{ cookiecutter.project_slug }}.config import get_project_root_path, import_env_vars
 
-
 if __name__ == "__main__":
     import_env_vars(os.path.join(get_project_root_path(), 'envdir'))
 
