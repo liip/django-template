@@ -10,3 +10,4 @@ werkzeug
 Fabric3
 dj-database-url
 gitric
+isort

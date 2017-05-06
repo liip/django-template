@@ -1,0 +1,7 @@
+-r base.in
+
+flake8
+pytest
+pytest-cov
+pytest-django
+pytest-xdist

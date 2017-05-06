@@ -1,0 +1,8 @@
+[run]
+source = {{ cookiecutter.project_slug }}
+omit =
+    */migrations/*
+    */tests/*
+    test_*.py
+    */tests.py
+    {{ cookiecutter.project_slug }}/config/*
