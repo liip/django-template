@@ -53,7 +53,37 @@ ALLOWED_HOSTS = tuple(get_env_variable('ALLOWED_HOSTS', '').splitlines())
 
 SECRET_KEY = get_env_variable('SECRET_KEY', '')
 
+{% if cookiecutter.use_djangocms == 'y' %}
+################
+# CMS SETTINGS #
+################
 
+CMS_LANGUAGES = {
+    'default': {
+        'public': True,
+        'hide_untranslated': False,
+        'redirect_on_fallback': True,
+    },
+    1: [
+        {
+            'public': True,
+            'code': 'en',
+            'hide_untranslated': False,
+            'name': gettext('en'),
+            'redirect_on_fallback': True,
+        },
+    ],
+}
+
+CMS_TEMPLATES = (
+    ('base.html', 'Base'),
+)
+
+CMS_PERMISSION = True
+
+CMS_PLACEHOLDER_CONF = {}
+
+{% endif %}
 #############
 # DATABASES #
 #############
