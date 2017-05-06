@@ -1,6 +1,8 @@
 [run]
+source = {{ cookiecutter.project_slug }}
 omit =
     */migrations/*
     */tests/*
     test_*.py
-    {{ cookiecutter.project_slug }}/config/settings/wsgi.py
+    */tests.py
+    {{ cookiecutter.project_slug }}/config/*
