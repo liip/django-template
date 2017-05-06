@@ -1,0 +1,6 @@
+[run]
+omit =
+    */migrations/*
+    */tests/*
+    test_*.py
+    {{ cookiecutter.project_slug }}/config/settings/wsgi.py
