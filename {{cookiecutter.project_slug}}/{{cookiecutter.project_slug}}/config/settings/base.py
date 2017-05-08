@@ -1,6 +1,7 @@
 import os
 
 import dj_database_url
+import dj_email_url
 
 from . import get_env_variable
 from .. import get_project_root_path
@@ -236,3 +237,18 @@ LOGGING = {
         },
     },
 }
+
+
+#############
+# E-Mailing #
+#############
+EMAIL_URL = get_env_variable('EMAIL_URL', 'console://')
+email_config = dj_email_url.parse(EMAIL_URL)
+EMAIL_FILE_PATH = email_config['EMAIL_FILE_PATH']
+EMAIL_HOST_USER = email_config['EMAIL_HOST_USER']
+EMAIL_HOST_PASSWORD = email_config['EMAIL_HOST_PASSWORD']
+EMAIL_HOST = email_config['EMAIL_HOST']
+EMAIL_PORT = email_config['EMAIL_PORT']
+EMAIL_BACKEND = email_config['EMAIL_BACKEND']
+EMAIL_USE_TLS = email_config['EMAIL_USE_TLS']
+EMAIL_USE_SSL = email_config['EMAIL_USE_SSL']
