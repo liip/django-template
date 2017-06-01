@@ -219,20 +219,74 @@ MIDDLEWARE_CLASSES = (
 # LOGGING #
 ###########
 
+# List of people that shall receive error log information per email
+ADMINS = [
+    ('John Doe', 'john@example.com'),
+]
+
+_PROJECT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                            '../../../')
+ERROR_LOG_FILE = get_env_variable('ERROR_LOG_FILE',
+                                  os.path.join(_PROJECT_DIR, 'error_log'))
+INFO_LOG_FILE = get_env_variable('INFO_LOG_FILE',
+                                 os.path.join(_PROJECT_DIR, 'info_log'))
 LOGGING = {
     'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'console': {
-            'level': 'INFO',
-            'class': 'logging.StreamHandler',
+    'disable_existing_loggers': True,
+    'filters': {
+        'info_only': {
+            '()': 'airstat_upload.log_filters.InfoLogFilter'
         },
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse'
+        },
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue'
+        }
+    },
+    'handlers': {
+        'info_file': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': INFO_LOG_FILE,
+            'maxBytes': 1024 * 1024 * 5,  # 5 MB
+            'backupCount': 5,
+            'formatter': 'default',
+            'filters': ['info_only']
+        },
+        'error_file': {
+            'level': 'WARNING',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': ERROR_LOG_FILE,
+            'maxBytes': 1024 * 1024 * 5,  # 5 MB
+            'backupCount': 5,
+            'formatter': 'default',
+        },
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'default',
+            'filters': ['require_debug_true']
+        },
+        'mail_admins': {
+            'level': 'ERROR',
+            'class': 'django.utils.log.AdminEmailHandler',
+            'filters': ['require_debug_false']
+        }
     },
     'loggers': {
         '': {
-            'handlers': ['console'],
-            'level': 'ERROR',
-            'propagate': True,
+            'handlers': ['error_file', 'info_file', 'console', 'mail_admins'],
+            'level': 'DEBUG',
+        },
+        'django': {
+            'handlers': ['error_file', 'info_file', 'console', 'mail_admins'],
+            'level': 'DEBUG',
         },
     },
+    'formatters': {
+        'default': {
+            'format': '%(asctime)s %(module)s %(message)s'
+        },
+    }
 }
