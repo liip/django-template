@@ -171,7 +171,7 @@ TEMPLATES = [{
 
 INSTALLED_APPS = (
     {% if cookiecutter.override_user_model == 'y' -%}
-    '{{ cookiecutter.project_slug }}.accounts',
+    '{{ cookiecutter.project_slug }}.accounts.apps.AccountsConfig',
 
     {% endif -%}
 
