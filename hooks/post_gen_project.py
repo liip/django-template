@@ -64,5 +64,5 @@ if __name__ == '__main__':
         shutil.copyfile('{{ cookiecutter.project_slug }}/templates/base_cms.html', '{{ cookiecutter.project_slug }}/templates/base.html')
 
     if '{{ cookiecutter.override_user_model }}' == 'n':
-        shutil.rmtree('accounts')
+        shutil.rmtree('{{ cookiecutter.project_slug }}/accounts')
     os.remove('{{ cookiecutter.project_slug }}/templates/base_cms.html')
