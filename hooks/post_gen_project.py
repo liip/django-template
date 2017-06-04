@@ -62,4 +62,7 @@ if __name__ == '__main__':
 
     if '{{ cookiecutter.use_djangocms }}' == 'y':
         shutil.copyfile('{{ cookiecutter.project_slug }}/templates/base_cms.html', '{{ cookiecutter.project_slug }}/templates/base.html')
+
+    if '{{ cookiecutter.override_user_model }}' == 'n':
+        shutil.rmtree('accounts')
     os.remove('{{ cookiecutter.project_slug }}/templates/base_cms.html')

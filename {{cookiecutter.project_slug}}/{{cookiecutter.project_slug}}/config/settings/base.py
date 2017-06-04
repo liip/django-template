@@ -170,7 +170,10 @@ TEMPLATES = [{
 ################
 
 INSTALLED_APPS = (
+    {% if cookiecutter.override_user_model == 'y' -%}
     'accounts',
+
+    {% endif -%}
 
     {% if cookiecutter.use_djangocms == 'y' -%}
 
@@ -219,10 +222,14 @@ MIDDLEWARE_CLASSES = (
 )
 
 
+{% if cookiecutter.override_user_model == 'y' -%}
 ##################
 # AUTHENTICATION #
 ##################
 AUTH_USER_MODEL = 'accounts.User'
+
+
+{% endif -%}
 
 
 ###########
