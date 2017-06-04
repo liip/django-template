@@ -170,8 +170,9 @@ TEMPLATES = [{
 ################
 
 INSTALLED_APPS = (
-    {% if cookiecutter.use_djangocms == 'y' -%}
     'accounts',
+
+    {% if cookiecutter.use_djangocms == 'y' -%}
 
     'djangocms_admin_style',
     'djangocms_text_ckeditor',
