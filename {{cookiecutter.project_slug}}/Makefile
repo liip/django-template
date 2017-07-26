@@ -1,14 +1,19 @@
-.DEFAULT_GOAL := help
+REQUIREMENTS_DIR = requirements
+objects = $(REQUIREMENTS_DIR)/base.txt $(REQUIREMENTS_DIR)/dev.txt
 
-.PHONY: requirements
-requirements: ## Generate all the requirement files
-	make -C requirements all
+all: requirements
 
-.PHONY: upgrade-requirements
-upgrade-requirements: ## Upgrade the requirements
-	make -C requirements clean
-	make -C requirements all PIP_OPTIONS="--upgrade"
+requirements/%.txt: $(REQUIREMENTS_DIR)/%.in $(REQUIREMENTS_DIR)/base.in
+	pip-compile $<
 
-.PHONY: help
-help: ## Display this help
-	@grep -E '^[.a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort -k 1,1 | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
+requirements: $(objects)
+
+upgrade-requirements:
+	for file in $(REQUIREMENTS_DIR)/*.in; do \
+		pip-compile --upgrade $$file; \
+	done
+
+clean:
+	rm $(objects)
+
+.PHONY: requirements upgrade-requirements
