@@ -170,7 +170,13 @@ TEMPLATES = [{
 ################
 
 INSTALLED_APPS = (
+    {% if cookiecutter.override_user_model == 'y' -%}
+    '{{ cookiecutter.project_slug }}.accounts.apps.AccountsConfig',
+
+    {% endif -%}
+
     {% if cookiecutter.use_djangocms == 'y' -%}
+
     'djangocms_admin_style',
     'djangocms_text_ckeditor',
     'djangocms_link',
@@ -214,6 +220,17 @@ MIDDLEWARE_CLASSES = (
     'cms.middleware.language.LanguageCookieMiddleware',
     {%- endif %}
 )
+
+
+{% if cookiecutter.override_user_model == 'y' -%}
+##################
+# AUTHENTICATION #
+##################
+AUTH_USER_MODEL = 'accounts.User'
+
+
+{% endif -%}
+
 
 ###########
 # LOGGING #
