@@ -11,7 +11,7 @@ def import_env_vars(directory):
 
     for env_var in env_vars:
         with open(env_var, 'r') as env_var_file:
-            os.environ.setdefault(env_var.split(os.sep)[-1], env_var_file.read().strip())
+            os.environ[env_var.split(os.sep)[-1]] = env_var_file.read().strip()
 
 
 def get_project_root_path():
