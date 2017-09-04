@@ -125,8 +125,7 @@ def restart_process():
     """
     Restart the WSGI process by touching the wsgi.py file.
     """
-    run('touch %s' % os.path.join(get_project_root(), env.project_name,
-                                  'wsgi.py'))
+    run('touch %s' % os.path.join(get_project_root(), env.project_name, 'config', 'wsgi.py'))
 
 
 def generate_secret_key():
@@ -198,7 +197,7 @@ def bootstrap():
         set_setting(setting)
 
     set_setting('DJANGO_SETTINGS_MODULE',
-                value='%s.settings.base' % env.project_name)
+                value='%s.config.settings.base' % env.project_name)
     set_setting('SECRET_KEY', value=generate_secret_key())
 
     execute(install_requirements)
@@ -213,11 +212,11 @@ def compile_assets():
     local('npm install')
     local('npm run build')
     local(
-        "rsync -e 'ssh -p {port}' -r --exclude *.map --exclude *.swp static/ "
+        "rsync -e 'ssh -p {port}' -r --exclude *.map --exclude *.swp {{ cookiecutter.project_slug }}/static/ "
         "{user}@{host}:{path}".format(host=env.host,
                                       user=env.user,
                                       port=env.port,
-                                      path=os.path.join(get_project_root(), 'static')))
+                                      path=os.path.join(env.root, 'static')))
 
 
 @task
