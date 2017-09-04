@@ -1,6 +1,6 @@
 import os
 import random
-import StringIO
+from io import StringIO
 from datetime import datetime
 
 import dj_database_url
@@ -169,7 +169,7 @@ def set_setting(setting_key, value=None, description=None):
         value = prompt("Please provide value for setting %s: " % setting_key)
 
     with cd(os.path.join(get_project_root(), 'envdir')):
-        put(StringIO.StringIO(value), setting_key)
+        put(StringIO(value), setting_key)
 
 
 @task
