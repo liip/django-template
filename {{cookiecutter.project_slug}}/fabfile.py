@@ -188,14 +188,14 @@ def bootstrap():
     required_settings = set(['DATABASE_URL', 'MEDIA_ROOT', 'STATIC_ROOT',
                             'MEDIA_URL', 'STATIC_URL', 'ALLOWED_HOSTS'])
 
-    if hasattr(env, 'settings'):
-        for setting, value in env.settings.items():
-            set_setting(setting, value=value)
+    env_settings = getattr(env, 'settings', {})
+    for setting, value in env_settings.items():
+        set_setting(setting, value=value)
 
-        # Ask for settings that are required but were not set in the parameters
-        # file
-        for setting in required_settings - set(env.settings.keys()):
-            set_setting(setting)
+    # Ask for settings that are required but were not set in the parameters
+    # file
+    for setting in required_settings - set(env_settings.keys()):
+        set_setting(setting)
 
     set_setting('DJANGO_SETTINGS_MODULE',
                 value='%s.settings.base' % env.project_name)
