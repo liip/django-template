@@ -220,7 +220,7 @@ def compile_assets():
 
 
 @task
-def deploy(tag):
+def deploy():
     require('root', 'project_name')
 
     execute(git_push, commit='@')
