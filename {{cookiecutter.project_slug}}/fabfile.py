@@ -1,10 +1,11 @@
 import os
 import random
-from io import StringIO
 from datetime import datetime
+from io import StringIO
 
 import dj_database_url
-from fabric.api import cd, env, execute, get, local, put, require, run, settings, shell_env, task
+from fabric.api import (cd, env, execute, get, local, put, require, run,
+                        settings, shell_env, task)
 from fabric.context_managers import quiet
 from fabric.operations import prompt
 from gitric import api as gitric
