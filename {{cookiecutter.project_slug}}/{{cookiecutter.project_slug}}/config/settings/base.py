@@ -6,7 +6,7 @@ import dj_email_url
 from . import get_env_variable
 from .. import get_project_root_path
 
-gettext = lambda s: s
+from django.utils.translation import ugettext_lazy
 
 # Full filesystem path to the project.
 BASE_DIR = get_project_root_path()
@@ -19,7 +19,7 @@ USE_L10N = True
 USE_TZ = True
 
 LANGUAGES = (
-    ('en', gettext('en')),
+    ('en', ugettext_lazy('English')),
 )
 
 LOCALE_PATHS = (
