@@ -21,6 +21,11 @@ USE_TZ = True
 LANGUAGES = (
     ('en', gettext('en')),
 )
+
+LOCALE_PATHS = (
+    'locale/',
+)
+
 {%- if cookiecutter.use_djangocms == 'y' %}
 
 SITE_ID = 1
