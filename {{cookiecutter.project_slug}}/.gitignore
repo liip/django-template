@@ -3,3 +3,8 @@ __pycache__
 /envdir/*
 !/envdir/.gitkeep
 /.tox
+
+/.cache/
+/.coverage
+
+*.mo
