@@ -178,8 +178,8 @@ TEMPLATES = [{
 INSTALLED_APPS = (
     {% if cookiecutter.override_user_model == 'y' -%}
     '{{ cookiecutter.project_slug }}.accounts.apps.AccountsConfig',
-
     {% endif -%}
+    '{{ cookiecutter.project_slug }}.{{ cookiecutter.app_name }}.apps.{{ cookiecutter.app_name|capitalize }}Config',
 
     {% if cookiecutter.use_djangocms == 'y' -%}
 

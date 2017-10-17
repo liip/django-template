@@ -5,3 +5,5 @@ pytest
 pytest-cov
 pytest-django
 pytest-xdist
+factory_boy==2.8.1
+pytest_factoryboy
