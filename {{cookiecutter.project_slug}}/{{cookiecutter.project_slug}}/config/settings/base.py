@@ -242,10 +242,6 @@ AUTH_USER_MODEL = 'accounts.User'
 # LOGGING #
 ###########
 
-###########
-# LOGGING #
-###########
-
 _PROJECT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                             '../../../')
 
@@ -259,7 +255,7 @@ LOGGING = {
     'disable_existing_loggers': True,
     'filters': {
         'info_only': {
-            '()': 'energyday17.log_filters.InfoLogFilter'
+            '()': '{{ cookiecutter.project_slug }}.config.log_filters.InfoLogFilter'
         },
         'require_debug_false': {
             '()': 'django.utils.log.RequireDebugFalse'
