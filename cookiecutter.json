@@ -4,6 +4,8 @@
     "override_user_model": "y",
     "use_djangocms": "n",
     "app_name": "web",
+    "language_list":  "de,en,fr,it",
+    "default_language": "en",
     "_copy_without_render": [
         "*.html"
     ]

@@ -54,6 +54,13 @@ def patch_playbook(path):
         f.write(''.join(patched_lines))
 
 
+def generate_blank_locale_files():
+    for lang in '{{ cookiecutter.language_list }}'.split(','):
+        os.mkdir('locale/{}'.format(lang))
+        os.mkdir('locale/{}/LC_MESSAGES'.format(lang))
+        open('locale/{}/LC_MESSAGES/django.po'.format(lang), 'w').close()
+
+
 if __name__ == '__main__':
     if '{{ cookiecutter.use_drifter }}' == 'y':
         install_drifter()
@@ -66,3 +73,5 @@ if __name__ == '__main__':
     if '{{ cookiecutter.override_user_model }}' == 'n':
         shutil.rmtree('{{ cookiecutter.project_slug }}/accounts')
     os.remove('{{ cookiecutter.project_slug }}/templates/base_cms.html')
+
+    generate_blank_locale_files()
