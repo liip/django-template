@@ -8,3 +8,6 @@ __pycache__
 /.coverage
 
 *.mo
+
+.idea/
+.pycharm_helpers/
