@@ -12,5 +12,6 @@ echo "- Update submodules"
 git submodule update --init
 
 export VIRTUALBOX_NAME=$1
+export VIRTUALIZATION_PARAMETERS_FILE=virtualization/parameters_test.yml
 
 ./virtualization/drifter/ci/start.sh
