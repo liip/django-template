@@ -1,25 +1,33 @@
 import os
 
 import dj_database_url
+import dj_email_url
 
 from . import get_env_variable
 from .. import get_project_root_path
 
-gettext = lambda s: s
+from django.utils.translation import ugettext_lazy
 
 # Full filesystem path to the project.
 BASE_DIR = get_project_root_path()
 
 # Internationalization
-LANGUAGE_CODE = 'en'
+LANGUAGE_CODE = '{{ cookiecutter.default_language }}'
 TIME_ZONE = 'Europe/Zurich'
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
 
 LANGUAGES = (
-    ('en', gettext('en')),
+{%- for lang in cookiecutter.language_list.split(',') %}
+    ('{{ lang }}', ugettext_lazy('{{ lang }}')),
+{%- endfor %}
 )
+
+LOCALE_PATHS = (
+    'locale/',
+)
+
 {%- if cookiecutter.use_djangocms == 'y' %}
 
 SITE_ID = 1
@@ -172,8 +180,8 @@ TEMPLATES = [{
 INSTALLED_APPS = (
     {% if cookiecutter.override_user_model == 'y' -%}
     '{{ cookiecutter.project_slug }}.accounts.apps.AccountsConfig',
-
     {% endif -%}
+    '{{ cookiecutter.project_slug }}.{{ cookiecutter.app_name }}.apps.{{ cookiecutter.app_name|capitalize }}Config',
 
     {% if cookiecutter.use_djangocms == 'y' -%}
 
@@ -236,20 +244,92 @@ AUTH_USER_MODEL = 'accounts.User'
 # LOGGING #
 ###########
 
+_PROJECT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                            '../../../')
+
+ERROR_LOG_FILE = get_env_variable('ERROR_LOG_FILE',
+                                  os.path.join(_PROJECT_DIR, 'error_log'))
+INFO_LOG_FILE = get_env_variable('INFO_LOG_FILE',
+                                 os.path.join(_PROJECT_DIR, 'info_log'))
+
 LOGGING = {
     'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'console': {
-            'level': 'INFO',
-            'class': 'logging.StreamHandler',
+    'disable_existing_loggers': True,
+    'filters': {
+        'info_only': {
+            '()': '{{ cookiecutter.project_slug }}.config.log_filters.InfoLogFilter'
         },
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse'
+        },
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue'
+        }
+    },
+    'handlers': {
+        'info_file': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': INFO_LOG_FILE,
+            'maxBytes': 1024 * 1024 * 5,  # 5 MB
+            'backupCount': 5,
+            'formatter': 'default',
+            'filters': ['info_only']
+        },
+        'error_file': {
+            'level': 'WARNING',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': ERROR_LOG_FILE,
+            'maxBytes': 1024 * 1024 * 5,  # 5 MB
+            'backupCount': 5,
+            'formatter': 'default',
+        },
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'default',
+            'filters': ['require_debug_true']
+        },
+        'mail_admins': {
+            'level': 'ERROR',
+            'class': 'django.utils.log.AdminEmailHandler',
+            'filters': ['require_debug_false']
+        }
     },
     'loggers': {
         '': {
+            'handlers': ['error_file', 'info_file', 'console', 'mail_admins'],
+            'level': 'DEBUG',
+        },
+        'django': {
+            'handlers': ['error_file', 'info_file', 'console', 'mail_admins'],
+            'level': 'DEBUG',
+        },
+        'django.db.backends': {
             'handlers': ['console'],
             'level': 'ERROR',
-            'propagate': True,
+            'propagate': False,
         },
     },
+    'formatters': {
+        'default': {
+            'format': '%(asctime)s %(module)s %(message)s'
+        },
+    }
 }
+
+
+#############
+# E-Mailing #
+#############
+EMAIL_URL = get_env_variable('EMAIL_URL', 'console://')
+email_config = dj_email_url.parse(EMAIL_URL)
+EMAIL_FILE_PATH = email_config['EMAIL_FILE_PATH']
+EMAIL_HOST_USER = email_config['EMAIL_HOST_USER']
+EMAIL_HOST_PASSWORD = email_config['EMAIL_HOST_PASSWORD']
+EMAIL_HOST = email_config['EMAIL_HOST']
+EMAIL_PORT = email_config['EMAIL_PORT']
+EMAIL_BACKEND = email_config['EMAIL_BACKEND']
+EMAIL_USE_TLS = email_config['EMAIL_USE_TLS']
+EMAIL_USE_SSL = email_config['EMAIL_USE_SSL']
+DEFAULT_FROM_EMAIL = get_env_variable('EMAIL_FROM', 'webmaster@localhost')

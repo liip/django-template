@@ -1,0 +1,3 @@
+[flake8]
+exclude = */migrations/,*/settings/,virtualization/,manage.py,.tox,node_modules,.git,deployment
+max-line-length=120
