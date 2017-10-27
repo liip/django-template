@@ -3,7 +3,7 @@ from .base import *  # noqa
 
 DEBUG = bool(get_env_variable('DEBUG', True))
 DEBUG_TOOLBAR_CONFIG = {"INTERCEPT_REDIRECTS": False}
-MIDDLEWARE_CLASSES += (  # noqa
+MIDDLEWARE += (  # noqa
     'debug_toolbar.middleware.DebugToolbarMiddleware',
 )
 

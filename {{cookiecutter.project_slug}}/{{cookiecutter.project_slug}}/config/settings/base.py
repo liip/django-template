@@ -200,7 +200,7 @@ INSTALLED_APPS = (
 # List of middleware classes to use. Order is important; in the request phase,
 # these middleware classes will be applied in the order given, and in the
 # response phase the middleware will be applied in reverse order.
-MIDDLEWARE_CLASSES = (
+MIDDLEWARE = (
     {% if cookiecutter.use_djangocms == 'y' -%}
     'cms.middleware.utils.ApphookReloadMiddleware',
 
