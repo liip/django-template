@@ -9,7 +9,7 @@ admin.autodiscover()
 
 urlpatterns = [
     url(r'^$', TemplateView.as_view(template_name='base.html')),
-    url(r'^admin/', include(admin.site.urls)),
+    url(r'^admin/', admin.site.urls),
     {%- if cookiecutter.use_djangocms == 'y' %}
     url(r'^', include('cms.urls')),
     {%- endif %}
