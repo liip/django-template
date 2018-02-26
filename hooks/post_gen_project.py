@@ -36,6 +36,7 @@ def patch_parameters(path):
     set_parameter(path, 'database_name', '{{ cookiecutter.project_slug }}')
     set_parameter(path, 'hostname', "{{ cookiecutter.project_slug.replace('_', '-') }}.lo")
     set_parameter(path, 'python_version', '3')
+    set_parameter(path, 'pip_tools_version', '1.11.0')
 
 
 def patch_playbook(path):
