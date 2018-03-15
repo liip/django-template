@@ -4,3 +4,5 @@ __pycache__
 /envdir/*
 !/envdir/.gitkeep
 /.tox
+
+.pytest_cache
