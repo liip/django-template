@@ -11,5 +11,10 @@ CACHES = {
     }
 }
 
+# use basic password hashing for tests for better performance
+PASSWORD_HASHERS = [
+    'django.contrib.auth.hashers.MD5PasswordHasher',
+]
+
 # Disable logging messages
 LOGGING = {}
