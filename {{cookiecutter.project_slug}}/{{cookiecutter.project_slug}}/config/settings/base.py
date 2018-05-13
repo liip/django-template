@@ -117,7 +117,7 @@ STATIC_URL = get_env_variable('STATIC_URL', '/static/')
 STATIC_ROOT = get_env_variable('STATIC_ROOT', '/tmp/static')
 
 STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, '{{ cookiecutter.project_slug }}', 'static'),
+    os.path.join(BASE_DIR, 'static'),
 )
 
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
