@@ -1,9 +1,10 @@
 {
-	"project_slug": "my_project",
-    "use_drifter": "y",
-    "override_user_model": "y",
-    "use_djangocms": "n",
-    "_copy_without_render": [
-        "*.html"
-    ]
+  "project_name": "My Project",
+  "project_slug": "{{ cookiecutter.project_name|lower|replace(' ', '_')|replace('-', '_') }}",
+  "use_drifter": "y",
+  "override_user_model": "y",
+  "use_djangocms": "n",
+  "_copy_without_render": [
+    "*.html"
+  ]
 }
