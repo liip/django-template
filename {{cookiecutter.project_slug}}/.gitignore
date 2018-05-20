@@ -7,8 +7,9 @@ __pycache__
 !/envdir/.gitkeep
 /.tox
 
-/static/*
-!/static/.gitkeep
+/node_modules
+/static/dist/*
+!/static/dist/.gitkeep
 
 {%- if cookiecutter.use_drifter == 'y' %} 
  
