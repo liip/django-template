@@ -1,8 +1,18 @@
 __pycache__
 *.pyc
+/.coverage 
+/.pytest_cache 
 
 /envdir/*
 !/envdir/.gitkeep
 /.tox
 
-.pytest_cache
+/static/*
+!/static/.gitkeep
+
+{%- if cookiecutter.use_drifter == 'y' %} 
+ 
+vagrant_ansible_inventory_default 
+.vagrant 
+/virtualization/playbook.retry 
+{%- endif %}

@@ -9,6 +9,5 @@ werkzeug
 
 # Deployment requirements
 Fabric3
-dj-database-url
 gitric
 isort

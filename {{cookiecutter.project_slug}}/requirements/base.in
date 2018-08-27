@@ -1,10 +1,10 @@
 dj-database-url
 Django
 psycopg2-binary
+{%- if cookiecutter.use_djangocms == 'y' %}
 
-{% if cookiecutter.use_djangocms == 'y' %}
 django-cms
 djangocms-text-ckeditor
 djangocms-link
 django-filer
-{% endif %}
+{%- endif %}
