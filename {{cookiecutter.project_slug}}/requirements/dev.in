@@ -2,6 +2,7 @@
 
 django-debug-toolbar
 django-extensions
+flake8-isort
 ipython
 pip-tools
 tox
