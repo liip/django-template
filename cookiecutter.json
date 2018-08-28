@@ -4,6 +4,8 @@
   "use_drifter": "y",
   "override_user_model": "y",
   "use_djangocms": "n",
+  "language_list":  "de,en,fr,it",
+  "default_language": "en",
   "_copy_without_render": [
     "*.html"
   ]

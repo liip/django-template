@@ -1,6 +1,8 @@
 import os
 
 import dj_database_url
+from django.utils.translation import ugettext_lazy as _
+
 
 from . import get_env_variable
 from .. import get_project_root_path
@@ -11,15 +13,22 @@ gettext = lambda s: s
 BASE_DIR = get_project_root_path()
 
 # Internationalization
-LANGUAGE_CODE = 'en'
+LANGUAGE_CODE = '{{ cookiecutter.default_language }}'
 TIME_ZONE = 'Europe/Zurich'
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
 
 LANGUAGES = (
-    ('en', gettext('en')),
+{%- for lang in cookiecutter.language_list.split(',') %}
+    ('{{ lang }}', _('{{ lang }}')),
+{%- endfor %}
 )
+
+LOCALE_PATHS = (
+    'locale/',
+)
+
 {%- if cookiecutter.use_djangocms == 'y' %}
 
 SITE_ID = 1
