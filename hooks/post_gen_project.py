@@ -38,6 +38,7 @@ def patch_parameters(path):
     set_parameter(path, 'python_version', '3')
     set_parameter(path, 'box_name', 'drifter/stretch64-base')
     set_parameter(path, 'box_url', 'https://vagrantbox-public.liip.ch/drifter-stretch64-base.json')
+    set_parameter(path, 'webpack_create_config', 'false')
 
 
 def patch_playbook(path):
@@ -47,7 +48,7 @@ def patch_playbook(path):
         lines = f.readlines()
 
     for line in lines:
-        if 'role: django' in line or 'role: postgresql' in line:
+        if 'role: django' in line or 'role: postgresql' in line or 'role: webpack' in line:
             line = line.replace('# -', '-')
 
         patched_lines.append(line)
