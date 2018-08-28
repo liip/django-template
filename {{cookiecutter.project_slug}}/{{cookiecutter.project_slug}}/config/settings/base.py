@@ -1,6 +1,8 @@
 import os
 
 import dj_database_url
+from django.utils.translation import ugettext_lazy as _
+
 
 from . import get_env_variable
 from .. import get_project_root_path
@@ -19,7 +21,7 @@ USE_TZ = True
 
 LANGUAGES = (
 {%- for lang in cookiecutter.language_list.split(',') %}
-    ('{{ lang }}', ugettext_lazy('{{ lang }}')),
+    ('{{ lang }}', _('{{ lang }}')),
 {%- endfor %}
 )
 
