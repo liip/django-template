@@ -1,6 +1,7 @@
 dj-database-url
 Django
 psycopg2-binary
+dj_email_url
 {%- if cookiecutter.use_djangocms == 'y' %}
 
 django-cms
