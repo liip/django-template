@@ -4,6 +4,7 @@ django-debug-toolbar
 django-extensions
 flake8-isort
 ipython
+ipdb
 pip-tools
 tox
 werkzeug

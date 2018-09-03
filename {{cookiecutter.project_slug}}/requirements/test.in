@@ -1,6 +1,7 @@
 -r base.in
 
 flake8
+ipdb
 pytest
 pytest-cov
 pytest-django
