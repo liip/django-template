@@ -2,3 +2,4 @@
 vagrant_ansible_inventory_default
 .vagrant
 /envdir/*
+.pycharm_helpers
