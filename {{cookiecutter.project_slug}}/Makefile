@@ -15,6 +15,10 @@ upgrade-requirements: ## Upgrade and compile requirements with pip-compile --upg
 		pip-compile --upgrade $$file; \
 	done
 
+.PHONY: sync-requirements
+sync-requirements:
+	pip-sync $(objects)
+
 .PHONY: translations
 translations: ## Regenerate .po files with ./manage.py makemessages
 	./manage.py makemessages -a -i "deployment/*" -i "requirements/*" -i "virtualization/*" -i "node_modules/*"
