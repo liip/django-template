@@ -20,7 +20,7 @@ translations: ## Regenerate .po files with ./manage.py makemessages
 	./manage.py makemessages -a -i "deployment/*" -i "requirements/*" -i "virtualization/*" -i "node_modules/*"
 
 .PHONY: compile-translations
-translations: ## Compile .po files with ./manage.py compilemessages
+compile-translations: ## Compile .po files with ./manage.py compilemessages
 	./manage.py compilemessages
 
 .PHONY: help

@@ -17,6 +17,7 @@ ENVIRONMENTS = {
     'prod': {
         'root': '/var/www/{{ cookiecutter.project_slug }}/prod/',
         'hosts': ['root@myhost'],
+        'pid': '/path/to/uwsgi/pid',
         # You can set settings that will be automatically deployed when running
         # the `bootstrap` command
         # 'settings': {
@@ -26,6 +27,7 @@ ENVIRONMENTS = {
     'dev': {
         'root': '/var/www/{{ cookiecutter.project_slug }}/staging/',
         'hosts': ['root@myhost'],
+        'pid': '/path/to/uwsgi/pid',
         # You can set settings that will be automatically deployed when running
         # the `bootstrap` command
         # 'settings': {
@@ -124,9 +126,9 @@ def collect_static():
 
 def restart_process():
     """
-    Restart the WSGI process by touching the wsgi.py file.
+    Restart the WSGI process
     """
-    run('touch %s' % os.path.join(get_project_root(), env.project_name, 'config', 'wsgi.py'))
+    run('uwsgi --reload %s' % env.pid)
 
 
 def generate_secret_key():
