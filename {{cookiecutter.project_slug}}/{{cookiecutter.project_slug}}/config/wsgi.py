@@ -15,7 +15,8 @@ from {{ cookiecutter.project_slug }}.config import get_project_root_path, import
 
 import_env_vars(os.path.join(get_project_root_path(), 'envdir'))
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "{{ cookiecutter.project_slug }}.config.settings.base")
+{% set config_name = 'heroku' if cookiecutter.setup_heroku == 'y' else 'base' %}
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "{{ cookiecutter.project_slug }}.config.settings.{{ config_name }}")
 
 
 application = get_wsgi_application()

@@ -1,0 +1,2 @@
+release: ./release-tasks.sh
+web: gunicorn {{ cookiecutter.project_slug }}.config.wsgi --log-file -

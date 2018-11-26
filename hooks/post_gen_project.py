@@ -79,5 +79,8 @@ if __name__ == '__main__':
     if '{{ cookiecutter.setup_heroku }}' == 'n':
         os.remove('requirements/heroku.in')
         os.remove('requirements.txt')
+        os.remove('Procfile')
+        os.remove('release-tasks.sh')
+        os.remove('{{ cookiecutter.project_slug }}/config/settings/heroku.py')
 
     generate_blank_locale_files()
