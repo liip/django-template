@@ -76,4 +76,8 @@ if __name__ == '__main__':
         shutil.rmtree('{{ cookiecutter.project_slug }}/accounts')
     os.remove('{{ cookiecutter.project_slug }}/templates/base_cms.html')
 
+    if '{{ cookiecutter.setup_heroku }}' == 'n':
+        os.remove('requirements/heroku.in')
+        os.remove('requirements.txt')
+
     generate_blank_locale_files()
