@@ -1,7 +1,7 @@
 .DEFAULT_GOAL := help
 
 REQUIREMENTS_DIR = requirements
-objects = $(REQUIREMENTS_DIR)/base.txt $(REQUIREMENTS_DIR)/dev.txt
+objects = $(REQUIREMENTS_DIR)/base.txt $(REQUIREMENTS_DIR)/dev.txt $(REQUIREMENTS_DIR)/test.txt
 
 requirements/%.txt: $(REQUIREMENTS_DIR)/%.in $(REQUIREMENTS_DIR)/base.in
 	pip-compile $<
