@@ -8,18 +8,25 @@ from django.views.generic import TemplateView
 admin.autodiscover()
 
 urlpatterns = [
-    path('', TemplateView.as_view(template_name='base.html')),
-    path('admin/', admin.site.urls),
+    path("", TemplateView.as_view(template_name="base.html")),
+    path("admin/", admin.site.urls),
     {%- if cookiecutter.use_djangocms == 'y' %}
-    path('', include('cms.urls')),
+    path("", include("cms.urls")),
     {%- endif %}
 ]
 
 if settings.DEBUG:
     import debug_toolbar
-    urlpatterns = [
-        path('media/<path:path>/', django.views.static.serve, {
-            'document_root': settings.MEDIA_ROOT, 'show_indexes': True
-        }),
-        path('__debug__/', include(debug_toolbar.urls)),
-    ] + staticfiles_urlpatterns() + urlpatterns
+
+    urlpatterns = (
+        [
+            path(
+                "media/<path:path>/",
+                django.views.static.serve,
+                {"document_root": settings.MEDIA_ROOT, "show_indexes": True},
+            ),
+            path("__debug__/", include(debug_toolbar.urls)),
+        ]
+        + staticfiles_urlpatterns()
+        + urlpatterns
+    )

@@ -14,21 +14,19 @@ gettext = lambda s: s
 BASE_DIR = get_project_root_path()
 
 # Internationalization
-LANGUAGE_CODE = '{{ cookiecutter.default_language }}'
-TIME_ZONE = 'Europe/Zurich'
+LANGUAGE_CODE = "{{ cookiecutter.default_language }}"
+TIME_ZONE = "Europe/Zurich"
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
 
 LANGUAGES = (
 {%- for lang in cookiecutter.language_list.split(',') %}
-    ('{{ lang }}', _('{{ lang }}')),
+    ("{{ lang }}", _("{{ lang }}")),
 {%- endfor %}
 )
 
-LOCALE_PATHS = (
-    'locale/',
-)
+LOCALE_PATHS = ("locale/",)
 
 {%- if cookiecutter.use_djangocms == 'y' %}
 
@@ -59,9 +57,9 @@ STATICFILES_FINDERS = (
 # a mode you'd pass directly to os.chmod.
 FILE_UPLOAD_PERMISSIONS = 0o644
 
-ALLOWED_HOSTS = tuple(get_env_variable('ALLOWED_HOSTS', '').splitlines())
+ALLOWED_HOSTS = tuple(get_env_variable("ALLOWED_HOSTS", "").splitlines())
 
-SECRET_KEY = get_env_variable('SECRET_KEY', '')
+SECRET_KEY = get_env_variable("SECRET_KEY", "")
 
 {% if cookiecutter.use_djangocms == 'y' %}
 ################
@@ -69,25 +67,23 @@ SECRET_KEY = get_env_variable('SECRET_KEY', '')
 ################
 
 CMS_LANGUAGES = {
-    'default': {
-        'public': True,
-        'hide_untranslated': False,
-        'redirect_on_fallback': True,
+    "default": {
+        "public": True,
+        "hide_untranslated": False,
+        "redirect_on_fallback": True,
     },
     1: [
         {
-            'public': True,
-            'code': 'en',
-            'hide_untranslated': False,
-            'name': gettext('en'),
-            'redirect_on_fallback': True,
-        },
+            "public": True,
+            "code": "en",
+            "hide_untranslated": False,
+            "name": gettext("en"),
+            "redirect_on_fallback": True,
+        }
     ],
 }
 
-CMS_TEMPLATES = (
-    ('base.html', 'Base'),
-)
+CMS_TEMPLATES = (("base.html", "Base"),)
 
 CMS_PERMISSION = True
 
@@ -98,9 +94,7 @@ CMS_PLACEHOLDER_CONF = {}
 # DATABASES #
 #############
 
-DATABASES = {
-    "default": dj_database_url.parse(get_env_variable('DATABASE_URL'))
-}
+DATABASES = {"default": dj_database_url.parse(get_env_variable("DATABASE_URL"))}
 
 
 #########
@@ -108,7 +102,7 @@ DATABASES = {
 #########
 
 # Name of the directory for the project.
-PROJECT_DIRNAME = '{{ cookiecutter.project_slug }}'
+PROJECT_DIRNAME = "{{ cookiecutter.project_slug }}"
 
 # Every cache key will get prefixed with this value - here we set it to
 # the name of the directory the project is in to try and use something
@@ -117,64 +111,67 @@ CACHE_MIDDLEWARE_KEY_PREFIX = PROJECT_DIRNAME
 
 # URL prefix for static files.
 # Example: "http://media.lawrence.com/static/"
-STATIC_URL = get_env_variable('STATIC_URL', '/static/')
+STATIC_URL = get_env_variable("STATIC_URL", "/static/")
 
 # Absolute path to the directory static files should be collected to.
 # Don't put anything in this directory yourself; store your static files
 # in apps' "static/" subdirectories and in STATICFILES_DIRS.
 # This is usually not used in a dev env, hence the default value
 # Example: "/home/media/media.lawrence.com/static/"
-STATIC_ROOT = get_env_variable('STATIC_ROOT', '/tmp/static')
+STATIC_ROOT = get_env_variable("STATIC_ROOT", "/tmp/static")
 
-STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, 'static'),
-)
+STATICFILES_DIRS = (os.path.join(BASE_DIR, "static"),)
 
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash.
 # Examples: "http://media.lawrence.com/media/", "http://example.com/media/"
-MEDIA_URL = get_env_variable('MEDIA_URL', '/media/')
+MEDIA_URL = get_env_variable("MEDIA_URL", "/media/")
 
 # Absolute filesystem path to the directory that will hold user-uploaded files.
 # Example: "/home/media/media.lawrence.com/media/"
-MEDIA_ROOT = get_env_variable('MEDIA_ROOT', '/tmp/static/media')
+MEDIA_ROOT = get_env_variable("MEDIA_ROOT", "/tmp/static/media")
 
 # Package/module name to import the root urlpatterns from for the project.
 ROOT_URLCONF = "%s.config.urls" % PROJECT_DIRNAME
-WSGI_APPLICATION = '{{ cookiecutter.project_slug }}.config.wsgi.application'
+WSGI_APPLICATION = "{{ cookiecutter.project_slug }}.config.wsgi.application"
 
-TEMPLATES = [{
-    'BACKEND': 'django.template.backends.django.DjangoTemplates',
-    'DIRS': [
-        os.path.join(BASE_DIR, '{{ cookiecutter.project_slug }}', 'templates'),
-    ],
-    'OPTIONS': {
-        'context_processors': [
-            'django.contrib.auth.context_processors.auth',
-            'django.contrib.messages.context_processors.messages',
-            'django.template.context_processors.i18n',
-            'django.template.context_processors.debug',
-            'django.template.context_processors.request',
-            'django.template.context_processors.media',
-            'django.template.context_processors.csrf',
-            'django.template.context_processors.tz',
-            'django.template.context_processors.static',
-            {%- if cookiecutter.use_djangocms == 'y' %}
-
-            'sekizai.context_processors.sekizai',
-            'cms.context_processors.cms_settings',
-            {%- endif %}
-
-            '{{ cookiecutter.project_slug }}.core.context_processors.webpack_dev_server',
+TEMPLATES = [
+    {
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [
+            os.path.join(BASE_DIR, "{{ cookiecutter.project_slug }}", "templates")
         ],
-        'loaders': [
-            ('django.template.loaders.cached.Loader', [
-                'django.template.loaders.filesystem.Loader',
-                'django.template.loaders.app_directories.Loader',
-            ]),
-        ]
-    },
-}]
+        "OPTIONS": {
+            "context_processors": [
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
+                "django.template.context_processors.i18n",
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.template.context_processors.media",
+                "django.template.context_processors.csrf",
+                "django.template.context_processors.tz",
+                "django.template.context_processors.static",
+                {%- if cookiecutter.use_djangocms == 'y' %}
+
+                "sekizai.context_processors.sekizai",
+                "cms.context_processors.cms_settings",
+                {%- endif %}
+
+                "{{ cookiecutter.project_slug }}.core.context_processors.webpack_dev_server",
+            ],
+            "loaders": [
+                (
+                    "django.template.loaders.cached.Loader",
+                    [
+                        "django.template.loaders.filesystem.Loader",
+                        "django.template.loaders.app_directories.Loader",
+                    ],
+                )
+            ],
+        },
+    }
+]
 
 
 ################
@@ -183,30 +180,26 @@ TEMPLATES = [{
 
 INSTALLED_APPS = (
     {% if cookiecutter.override_user_model == 'y' -%}
-    '{{ cookiecutter.project_slug }}.accounts.apps.AccountsConfig',
-
+    "{{ cookiecutter.project_slug }}.accounts.apps.AccountsConfig",
     {% endif -%}
-
     {% if cookiecutter.use_djangocms == 'y' -%}
-
-    'djangocms_admin_style',
-    'djangocms_text_ckeditor',
-    'djangocms_link',
-    'cms',
-    'menus',
-    'treebeard',
-    'sekizai',
-    'filer',
-    'easy_thumbnails',
-    'django.contrib.sites',
-
+    "djangocms_admin_style",
+    "djangocms_text_ckeditor",
+    "djangocms_link",
+    "cms",
+    "menus",
+    "treebeard",
+    "sekizai",
+    "filer",
+    "easy_thumbnails",
+    "django.contrib.sites",
     {% endif -%}
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.admin',
-    'django.contrib.staticfiles',
-    'django.contrib.messages',
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.admin",
+    "django.contrib.staticfiles",
+    "django.contrib.messages",
 )
 
 # List of middleware classes to use. Order is important; in the request phase,
@@ -214,22 +207,20 @@ INSTALLED_APPS = (
 # response phase the middleware will be applied in reverse order.
 MIDDLEWARE = (
     {% if cookiecutter.use_djangocms == 'y' -%}
-    'cms.middleware.utils.ApphookReloadMiddleware',
-
+    "cms.middleware.utils.ApphookReloadMiddleware",
     {% endif -%}
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.locale.LocaleMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.locale.LocaleMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
     {%- if cookiecutter.use_djangocms == 'y' %}
-
-    'cms.middleware.user.CurrentUserMiddleware',
-    'cms.middleware.page.CurrentPageMiddleware',
-    'cms.middleware.toolbar.ToolbarMiddleware',
-    'cms.middleware.language.LanguageCookieMiddleware',
+    "cms.middleware.user.CurrentUserMiddleware",
+    "cms.middleware.page.CurrentPageMiddleware",
+    "cms.middleware.toolbar.ToolbarMiddleware",
+    "cms.middleware.language.LanguageCookieMiddleware",
     {%- endif %}
 )
 
@@ -238,7 +229,7 @@ MIDDLEWARE = (
 ##################
 # AUTHENTICATION #
 ##################
-AUTH_USER_MODEL = 'accounts.User'
+AUTH_USER_MODEL = "accounts.User"
 
 
 {% endif -%}
@@ -249,35 +240,24 @@ AUTH_USER_MODEL = 'accounts.User'
 ###########
 
 LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'console': {
-            'level': 'INFO',
-            'class': 'logging.StreamHandler',
-        },
-    },
-    'loggers': {
-        '': {
-            'handlers': ['console'],
-            'level': 'ERROR',
-            'propagate': True,
-        },
-    },
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {"console": {"level": "INFO", "class": "logging.StreamHandler"}},
+    "loggers": {"": {"handlers": ["console"], "level": "ERROR", "propagate": True}},
 }
 
 
 #############
 # E-Mailing #
 #############
-EMAIL_URL = get_env_variable('EMAIL_URL', 'console://')
+EMAIL_URL = get_env_variable("EMAIL_URL", "console://")
 email_config = dj_email_url.parse(EMAIL_URL)
-EMAIL_FILE_PATH = email_config['EMAIL_FILE_PATH']
-EMAIL_HOST_USER = email_config['EMAIL_HOST_USER']
-EMAIL_HOST_PASSWORD = email_config['EMAIL_HOST_PASSWORD']
-EMAIL_HOST = email_config['EMAIL_HOST']
-EMAIL_PORT = email_config['EMAIL_PORT']
-EMAIL_BACKEND = email_config['EMAIL_BACKEND']
-EMAIL_USE_TLS = email_config['EMAIL_USE_TLS']
-EMAIL_USE_SSL = email_config['EMAIL_USE_SSL']
-DEFAULT_FROM_EMAIL = get_env_variable('EMAIL_FROM', 'webmaster@localhost')
+EMAIL_FILE_PATH = email_config["EMAIL_FILE_PATH"]
+EMAIL_HOST_USER = email_config["EMAIL_HOST_USER"]
+EMAIL_HOST_PASSWORD = email_config["EMAIL_HOST_PASSWORD"]
+EMAIL_HOST = email_config["EMAIL_HOST"]
+EMAIL_PORT = email_config["EMAIL_PORT"]
+EMAIL_BACKEND = email_config["EMAIL_BACKEND"]
+EMAIL_USE_TLS = email_config["EMAIL_USE_TLS"]
+EMAIL_USE_SSL = email_config["EMAIL_USE_SSL"]
+DEFAULT_FROM_EMAIL = get_env_variable("EMAIL_FROM", "webmaster@localhost")

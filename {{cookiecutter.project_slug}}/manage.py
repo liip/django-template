@@ -5,9 +5,11 @@ import sys
 from {{ cookiecutter.project_slug }}.config import get_project_root_path, import_env_vars
 
 if __name__ == "__main__":
-    import_env_vars(os.path.join(get_project_root_path(), 'envdir'))
+    import_env_vars(os.path.join(get_project_root_path(), "envdir"))
 
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "{{ cookiecutter.project_slug }}.config.settings.dev")
+    os.environ.setdefault(
+        "DJANGO_SETTINGS_MODULE", "{{ cookiecutter.project_slug }}.config.settings.dev"
+    )
 
     from django.core.management import execute_from_command_line
 
