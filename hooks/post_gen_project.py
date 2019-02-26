@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os
+import re
 import shutil
 
 
@@ -42,12 +43,15 @@ def patch_parameters(path):
 
 def patch_playbook(path):
     patched_lines = []
+    roles_to_enable = set(['django', 'postgresql', 'webpack', 'gitlabci'])
 
     with open(path) as f:
         lines = f.readlines()
 
     for line in lines:
-        if 'role: django' in line or 'role: postgresql' in line or 'role: webpack' in line:
+        role_match = re.search(r'role: (\w+)', line)
+
+        if role_match and role_match.group(1) in roles_to_enable:
             line = line.replace('# -', '-')
 
         patched_lines.append(line)
