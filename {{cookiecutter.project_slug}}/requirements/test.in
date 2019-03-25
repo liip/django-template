@@ -1,6 +1,7 @@
 -r base.in
 
 flake8
+flake8-isort
 ipdb
 pytest
 pytest-cov
