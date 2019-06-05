@@ -157,8 +157,6 @@ TEMPLATES = [
                 "sekizai.context_processors.sekizai",
                 "cms.context_processors.cms_settings",
                 {%- endif %}
-
-                "{{ cookiecutter.project_slug }}.core.context_processors.webpack_dev_server",
             ],
             "loaders": [
                 (
