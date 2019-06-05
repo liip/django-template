@@ -10,6 +10,6 @@ tox
 werkzeug
 
 # Deployment requirements
-Fabric
+Fabric3
 gitric
 isort
