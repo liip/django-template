@@ -2,7 +2,6 @@
 const path = require('path');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const SpriteLoaderPlugin = require('svg-sprite-loader/plugin');
-const browserslist = require('./package.json').browserslist;
 
 module.exports = {
   mode: process.env.NODE_ENV,
