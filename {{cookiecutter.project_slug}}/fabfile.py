@@ -239,7 +239,7 @@ def compile_assets():
     local("npm install")
     local("npm run build")
     local(
-        "rsync -e 'ssh -p {port}' -r --exclude *.map --exclude *.swp {{ cookiecutter.project_slug }}/static/ "
+        "rsync -e 'ssh -p {port}' -r --exclude *.map --exclude *.swp static/dist/ "
         "{user}@{host}:{path}".format(
             host=env.host,
             user=env.user,
