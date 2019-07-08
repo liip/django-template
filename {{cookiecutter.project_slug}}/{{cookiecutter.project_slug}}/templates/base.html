@@ -5,10 +5,7 @@
     <meta charset="UTF-8">
     <title></title>
 
-    {# In development, stylesheets are injected by webpack-dev-server #}
-    {% if not webpack_dev_server %}
     <link rel="stylesheet" type="text/css" href="{% static 'dist/common.css' %}">
-    {% endif %}
   </head>
   <body>
     {% block body %}

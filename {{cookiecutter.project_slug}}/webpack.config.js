@@ -2,7 +2,6 @@
 const path = require('path');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const SpriteLoaderPlugin = require('svg-sprite-loader/plugin');
-const browserslist = require('./package.json').browserslist;
 
 module.exports = {
   mode: process.env.NODE_ENV,
@@ -33,7 +32,10 @@ module.exports = {
         test: /\.scss$/,
         use: [
           {
-            loader: process.env.NODE_ENV === 'production' ? MiniCssExtractPlugin.loader : 'style-loader',
+            loader: MiniCssExtractPlugin.loader,
+            options: {
+              hmr: process.env.NODE_ENV === 'development',
+            },
           },
           'css-loader',
           {
@@ -88,9 +90,6 @@ module.exports = {
     proxy: {
       '**': {
         target: 'http://{{ cookiecutter.project_slug|replace('_', '-') }}.lo',
-        headers: {
-          'x-webpack-dev-server': 'yes',
-        },
       },
     },
     public: '{{ cookiecutter.project_slug|replace('_', '-') }}.lo:3000',
