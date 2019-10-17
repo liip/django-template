@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- encoding: utf-8 -*-
 
 import os
 import re
@@ -8,6 +9,17 @@ import shutil
 def install_drifter():
     os.system('git init .')
     os.system('curl -sS https://raw.githubusercontent.com/liip/drifter/master/install.sh | /bin/bash')
+
+
+def uninstall_docker():
+    files_to_remove = {
+        'entrypoint.sh', 'entrypoint-frontend.sh', 'docker-compose.yml',
+        'docker-compose.override.example.yml', 'Dockerfile',
+        'Dockerfile-frontend', '.gitlab-ci.yml', 'scripts/run_tests_docker.sh'
+    }
+
+    for file_ in files_to_remove:
+        os.remove(file_)
 
 
 def set_parameter(path, key, value):
@@ -68,10 +80,15 @@ def generate_blank_locale_files():
 
 
 if __name__ == '__main__':
-    if '{{ cookiecutter.use_drifter }}' == 'y':
+    use_docker = '{{ cookiecutter.virtualization_tool }}' == 'docker'
+
+    if '{{ cookiecutter.virtualization_tool }}' == 'drifter':
         install_drifter()
         patch_parameters('virtualization/parameters.yml')
         patch_playbook('virtualization/playbook.yml')
+
+    if not use_docker:
+        uninstall_docker()
 
     if '{{ cookiecutter.use_djangocms }}' == 'y':
         shutil.copyfile('{{ cookiecutter.project_slug }}/templates/base_cms.html', '{{ cookiecutter.project_slug }}/templates/base.html')
@@ -81,3 +98,7 @@ if __name__ == '__main__':
     os.remove('{{ cookiecutter.project_slug }}/templates/base_cms.html')
 
     generate_blank_locale_files()
+
+    print("\n(~˘▾˘)~ Your project `{{ cookiecutter.project_slug }}` is ready, have a nice day! ~(˘▾˘~)")
+    if use_docker:
+        print("Please follow the instructions in the docker-compose.override.example.yml file to get started.")

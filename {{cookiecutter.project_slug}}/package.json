@@ -1,0 +1,40 @@
+{
+  "name": "{{ cookiecutter.project_slug }}",
+  "version": "1.0.0",
+  "author": "Liip AG",
+  "license": "private",
+  "private": true,
+  "scripts": {
+    "start": "NODE_ENV=development webpack-dev-server --hot",
+    "build": "NODE_ENV=production webpack"
+  },
+  "dependencies": {
+    "core-js": "^3.2.1"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.4.5",
+    "@babel/preset-env": "^7.4.5",
+    "autoprefixer": "^9.6.0",
+    "babel-loader": "^8.0.6",
+    "css-loader": "^2.1.1",
+    "cssnano": "^4.1.10",
+    "file-loader": "^4.0.0",
+    "mini-css-extract-plugin": "^0.7.0",
+    "node-sass": "^4.12.0",
+    "postcss": "^7.0.17",
+    "postcss-cli": "^6.1.2",
+    "postcss-loader": "^3.0.0",
+    "sass-loader": "^7.1.0",
+    "svg-sprite-loader": "^4.1.6",
+    "svgo": "^1.2.2",
+    "svgo-loader": "^2.2.0",
+    "webpack": "^4.5.0",
+    "webpack-cli": "^3.3.2",
+    "webpack-dev-server": "^3.6.0"
+  },
+  "browserslist": [
+    "> 0.5%",
+    "not op_mini all",
+    "not dead"
+  ]
+}

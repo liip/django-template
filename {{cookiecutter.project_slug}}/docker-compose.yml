@@ -1,0 +1,47 @@
+version: '3.4'
+
+x-environment:
+  &x-environment
+  INITIAL: "${INITIAL:-0}"
+
+services:
+  db:
+    image: postgres:9.4
+    environment:
+      POSTGRES_PASSWORD:
+      POSTGRES_DB: {{ cookiecutter.project_slug }}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - 5432
+  backend:
+    build: .
+    command: sh -c 'while true; do ./manage.py runserver 0.0.0.0:8000; sleep 1; done'
+    environment:
+      <<: *x-environment
+      ALLOWED_HOSTS: >-
+        localhost
+      DATABASE_URL: postgresql://postgres@db/{{ cookiecutter.project_slug }}
+    ports:
+      - 8000
+    volumes:
+      - venv:/venv
+      - .:/code
+    depends_on:
+      - db
+    stdin_open: true
+    tty: true
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile-frontend
+    command: npm start
+    volumes:
+      - .:/code
+    ports:
+      - 3000
+    environment:
+      <<: *x-environment
+volumes:
+  pgdata:
+  venv:

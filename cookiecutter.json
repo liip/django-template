@@ -1,7 +1,7 @@
 {
   "project_name": "My Project",
   "project_slug": "{{ cookiecutter.project_name|lower|replace(' ', '_')|replace('-', '_') }}",
-  "use_drifter": "y",
+  "virtualization_tool": ["docker", "drifter"],
   "override_user_model": "y",
   "use_djangocms": "n",
   "language_list":  "de,en,fr,it",

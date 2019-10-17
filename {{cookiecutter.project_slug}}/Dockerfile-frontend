@@ -1,0 +1,7 @@
+FROM node:10-buster
+
+USER node
+WORKDIR /code
+
+COPY entrypoint-frontend.sh /
+ENTRYPOINT [ "/entrypoint-frontend.sh" ]

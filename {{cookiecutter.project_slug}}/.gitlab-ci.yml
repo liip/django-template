@@ -1,0 +1,32 @@
+stages:
+  - test
+
+test:
+  stage: test
+  tags:
+    - docker
+    - docker-nonswiss-ok
+  image: &test_image 'python:3.7.4-buster'
+  services:
+    - name: postgres:9.4
+      alias: db
+  variables:
+    DJANGO_SETTINGS_MODULE: "{{ cookiecutter.project_slug }}.config.settings.test"
+    DATABASE_URL: postgresql://postgres:postgres@db/postgres
+    PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  cache:
+    key: *test_image
+    paths:
+      - .cache/pip
+  script:
+    - pip install -r requirements/test.txt
+    - |
+      bash -c "
+        echo -n 'Wait until the PostgreSQL server is ready .'
+        while ! (echo > /dev/tcp/db/5432) >/dev/null 2>&1; do
+          echo -n '.'
+          sleep 1
+        done
+        echo ' Ready!'
+      "
+    - ./scripts/run_tests.sh
