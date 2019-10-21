@@ -24,13 +24,13 @@
 # ~~~~~~~~~~~~~~~~~~~~~
 #
 # Set up pontsun (https://github.com/liip/pontsun) and start it. Then visit
-# https://{{ subdomain }}.pontsun.test/ to access the Webpack dev server.
+# https://{{ subdomain }}.docker.test/ to access the Webpack dev server.
 #
 # version: '3.4'
 # x-environment:
 #   &x-environment
 #   ALLOWED_HOSTS: >-
-#     {{ subdomain }}.pontsun.test
+#     {{ subdomain }}.docker.test
 # services:
 #   backend:
 #     environment:
@@ -41,13 +41,13 @@
 #       - pontsun
 #     labels:
 #       - 'traefik.enable=true'
-#       - 'traefik.docker.network=traefik_default'
+#       - 'traefik.docker.network=pontsun'
 #       - 'traefik.backend={{ cookiecutter.project_slug }}'
 #       - 'traefik.port=3000'
-#       - 'traefik.frontend.rule=Host:{{ subdomain }}.pontsun.test'
+#       - 'traefik.frontend.rule=Host:{{ subdomain }}.docker.test'
 #     environment:
 #       <<: *x-environment
 # networks:
 #   pontsun:
 #     external:
-#       name: traefik_default
+#       name: pontsun
