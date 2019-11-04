@@ -1,0 +1,53 @@
+{% set subdomain = cookiecutter.project_slug|replace("_", "-") %}# Docker-compose override examples
+# ================================
+#
+# Make a copy of this file and name it `docker-compose.override.yml`, then
+# choose one among the following configurations and uncomment the lines.
+# Finally cross your fingers and run `INITIAL=1 docker-compose up`.
+
+# MINIMAL CONFIGURATION
+# ~~~~~~~~~~~~~~~~~~~~~
+#
+# Visit http://localhost:8000/ to access the Django dev server and
+# http://localhost:3000/ to access the Webpack dev server.
+#
+# version: '3.4'
+# services:
+#   backend:
+#     ports:
+#       - 127.0.0.1:8000:8000
+#   frontend:
+#     ports:
+#       - 127.0.0.1:3000:3000
+
+# PONTSUN CONFIGURATION
+# ~~~~~~~~~~~~~~~~~~~~~
+#
+# Set up pontsun (https://github.com/liip/pontsun) and start it. Then visit
+# https://{{ subdomain }}.docker.test/ to access the Webpack dev server.
+#
+# version: '3.4'
+# x-environment:
+#   &x-environment
+#   ALLOWED_HOSTS: >-
+#     {{ subdomain }}.docker.test
+# services:
+#   backend:
+#     environment:
+#       <<: *x-environment
+#   frontend:
+#     networks:
+#       - default
+#       - pontsun
+#     labels:
+#       - 'traefik.enable=true'
+#       - 'traefik.docker.network=pontsun'
+#       - 'traefik.backend={{ cookiecutter.project_slug }}'
+#       - 'traefik.port=3000'
+#       - 'traefik.frontend.rule=Host:{{ subdomain }}.docker.test'
+#     environment:
+#       <<: *x-environment
+# networks:
+#   pontsun:
+#     external:
+#       name: pontsun

@@ -1,7 +1,7 @@
 __pycache__
 *.pyc
-/.coverage 
-/.pytest_cache 
+/.coverage
+/.pytest_cache
 
 /envdir/*
 !/envdir/.gitkeep
@@ -11,9 +11,16 @@ __pycache__
 /static/dist/*
 !/static/dist/.gitkeep
 
-{%- if cookiecutter.use_drifter == 'y' %} 
- 
-vagrant_ansible_inventory_default 
-.vagrant 
-/virtualization/playbook.retry 
+{%- if cookiecutter.virtualization_tool == 'drifter' %}
+
+vagrant_ansible_inventory_default
+.vagrant
+/virtualization/playbook.retry
+{%- endif %}
+
+{%- if cookiecutter.virtualization_tool == 'docker' %}
+
+/docker-compose.override.yml
+/venv
+/.env
 {%- endif %}

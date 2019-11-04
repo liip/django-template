@@ -89,10 +89,10 @@ module.exports = {
   devServer: {
     proxy: {
       '**': {
-        target: 'http://{{ cookiecutter.project_slug|replace('_', '-') }}.lo',
+        target: process.env.BACKEND_URL || "http://backend:8000",
       },
     },
-    public: '{{ cookiecutter.project_slug|replace('_', '-') }}.lo:3000',
+    allowedHosts: (process.env.ALLOWED_HOSTS || "localhost").split(/\s+/),
     host: '0.0.0.0',
     port: 3000,
     compress: true,
