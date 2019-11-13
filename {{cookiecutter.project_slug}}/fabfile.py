@@ -1,144 +1,234 @@
+import functools
 import os
 import random
+import subprocess
 from datetime import datetime
 from io import StringIO
 
 import dj_database_url
-from fabric.api import (
-    cd,
-    env,
-    execute,
-    get,
-    local,
-    put,
-    require,
-    run,
-    settings,
-    shell_env,
-    task,
-)
-from fabric.context_managers import quiet
-from fabric.operations import prompt
-from gitric import api as gitric
+from dulwich import porcelain
+from fabric import task
+from fabric.connection import Connection
+from invoke import Exit
+from invoke.exceptions import UnexpectedExit
 
-# This is the definition of your environments. Every item of the ENVIRONMENTS
-# dict will be made available as a fabric task and the properties you put in a
-# particular environment will be made available in the `env` variable.
 ENVIRONMENTS = {
     "prod": {
         "root": "/var/www/{{ cookiecutter.project_slug }}/prod/",
-        "hosts": ["root@myhost"],
+        "host": "root@myhost",
         "pid": "/path/to/uwsgi/pid",
         # You can set settings that will be automatically deployed when running
         # the `bootstrap` command
-        # 'settings': {
-        #     'ALLOWED_HOSTS': 'www.myhost.com',
-        # }
+        "settings": {
+            #     'ALLOWED_HOSTS': 'www.myhost.com',
+        },
     },
     "dev": {
-        "root": "/var/www/{{ cookiecutter.project_slug }}/staging/",
-        "hosts": ["root@myhost"],
+        "root": "/var/www/{{ cookiecutter.project_slug }}/dev/",
+        "host": "root@myhost",
         "pid": "/path/to/uwsgi/pid",
         # You can set settings that will be automatically deployed when running
         # the `bootstrap` command
-        # 'settings': {
-        #     'ALLOWED_HOSTS': 'www.myhost.com',
-        # }
+        "settings": {
+            #     'ALLOWED_HOSTS': 'www.myhost.com',
+        },
     },
 }
 
-env.project_name = "{{ cookiecutter.project_slug }}"
+project_name = "{{ cookiecutter.project_slug }}"
 
 
-def ls(path):
+def remote(task_func):
     """
-    Return the list of the files in the given directory, omitting . and ...
+    Decorate task functions to check for presence of a Connection instance in their context.
+    Also pass the Connection instance in argument for convenience.
     """
-    with cd(path), quiet():
-        files = run("for i in *; do echo $i; done")
-        files_list = files.replace("\r", "").split("\n")
 
-    return files_list
+    @functools.wraps(task_func)
+    def call_task_with_connection(ctx, *args, **kwargs):
+        if not hasattr(ctx, "conn"):
+            raise RuntimeError("Trying to run a remote task with no environment loaded")
+        return task_func(ctx, *args, **kwargs)
+
+    return call_task_with_connection
 
 
-def git_push(commit):
+class CustomConnection(Connection):
     """
-    Push the current tree to the remote server and reset the remote git
-    repository to the given commit. The commit can be any git object, be it a
-    hash, a tag or a branch.
+    Add helpers function on Connection
     """
-    gitric.git_seed(get_project_root(), commit)
-    gitric.git_reset(get_project_root(), "master")
 
+    @property
+    def project_root(self):
+        return self.config.root
 
-def get_project_root():
-    """
-    Return the path to the root of the project on the remote server.
-    """
-    return os.path.join(env.root, env.project_name)
+    @property
+    def wwwroot(self):
+        """
+        Return the path to the root of the project on the remote server.
+        """
+        return os.path.join(self.project_root, project_name)
 
+    @property
+    def venvpath(self):
+        return os.path.join(self.project_root, "venv")
 
-def get_virtualenv_root():
-    """
-    Return the path to the virtual environment on the remote server.
-    """
-    return os.path.join(env.root, "venv")
+    @property
+    def envdirpath(self):
+        return os.path.join(self.wwwroot, "envdir")
 
+    @property
+    def backups_root(self):
+        """
+        Return the path to the backups directory on the remote server.
+        """
+        return os.path.join(self.project_root, "backups")
 
-def get_backups_root():
-    """
-    Return the path to the backups directory on the remote server.
-    """
-    return os.path.join(env.root, "backups")
+    def run_in_wwwroot(self, cmd, **kwargs):
+        """
+        Run command after a cd to the wwwroot
+        """
+        with self.cd(self.wwwroot):
+            return self.run(cmd, **kwargs)
 
+    def git(self, gitcmd, **kwargs):
+        """
+        git from the wwwroot
+        """
+        return self.run_in_wwwroot("git {}".format(gitcmd), **kwargs)
 
-def run_in_virtualenv(cmd, args):
-    """
-    Run the given command from the remote virtualenv.
-    """
-    return run("%s %s" % (os.path.join(get_virtualenv_root(), "bin", cmd), args))
+    def run_in_venv(self, cmd, args, **run_kwargs):
+        """
+        Binaries from the venv
+        """
+        return self.run_in_wwwroot(
+            "{} {}".format(os.path.join(self.venvpath, "bin", cmd), args), **run_kwargs
+        )
 
+    def mk_venv(self, **run_kwargs):
+        """
+        Create the venv
+        """
+        return self.run_in_wwwroot(
+            "virtualenv --python=/usr/bin/python3 {}".format(self.venvpath),
+            **run_kwargs
+        )
 
-def run_pip(args):
-    """
-    Run the pip command in the remote virtualenv.
-    """
-    return run_in_virtualenv("pip", args)
+    def pip(self, args, **run_kwargs):
+        """
+        pip from the venv, in the wwwroot
+        """
+        return self.run_in_venv("pip", args, **run_kwargs)
 
+    def python(self, args, **run_kwargs):
+        """
+        python from the venv, in the wwwroot
+        """
+        return self.run_in_venv("python", args, **run_kwargs)
 
-def run_python(args):
-    """
-    Run the python command in the remote virtualenv.
-    """
-    return run_in_virtualenv("python", args)
+    def manage_py(self, args, **run_kwargs):
+        """
+        manage.py with the python from the venv, in the wwwroot
+        """
+        env = {}
+        try:
+            env["DJANGO_SETTINGS_MODULE"] = self.config.settings[
+                "DJANGO_SETTINGS_MODULE"
+            ]
+        except KeyError:
+            pass
+        return self.python("./manage.py {}".format(args), env=env, **run_kwargs)
 
+    def set_setting(self, name, value=None, force: bool = True):
+        """
+        Set a setting in the environment directory, for use by Django
+        """
 
-def install_requirements():
-    """
-    Install the requirements from the base.txt file to the remote virtualenv.
-    """
-    with cd(get_project_root()):
-        run_pip("install -r requirements/base.txt")
+        if value is None:
+            value = input("Value for {}: ".format(name))
 
+        # Convert booleans into ints, so that Django takes them back easily
+        if isinstance(value, bool):
+            value = int(value)
 
-def migrate_database():
-    with cd(get_project_root()):
-        run_python("manage.py migrate")
+        envfile_path = os.path.join(self.envdirpath, name)
 
+        will_write = force
+        try:
+            # Test that it does exist
+            self.run_in_wwwroot("test -r {}".format(envfile_path), hide=True)
+        except UnexpectedExit:
+            will_write = True
 
-def collect_static():
-    """
-    Collect static files to the STATIC_ROOT directory.
-    """
-    with cd(get_project_root()):
-        run_python("manage.py collectstatic --noinput")
+        if will_write:
+            self.put(StringIO("{}\n".format(value)), envfile_path)
 
+    def dump_db(self, destination):
+        """
+        Dump the database to the given directory and return the path to the file created.
+        This creates a gzipped SQL file.
+        """
+        with self.cd(self.wwwroot):
+            db_credentials = self.run("cat envdir/DATABASE_URL", hide=True).stdout.strip()
+        db_credentials_dict = dj_database_url.parse(db_credentials)
 
-def restart_process():
-    """
-    Restart the WSGI process
-    """
-    run("uwsgi --reload %s" % env.pid)
+        if not is_supported_db_engine(db_credentials_dict["ENGINE"]):
+            raise NotImplementedError(
+                "The dump_db task doesn't support the remote database engine"
+            )
+
+        outfile = os.path.join(
+            destination, datetime.now().strftime("%Y-%m-%d_%H%M%S.sql.gz")
+        )
+
+        self.run(
+            "pg_dump -O -x -h {host} -U {user} {db}|gzip > {outfile}".format(
+                host=db_credentials_dict["HOST"],
+                user=db_credentials_dict["USER"],
+                db=db_credentials_dict["NAME"],
+                outfile=outfile,
+            ),
+            env={"PGPASSWORD": db_credentials_dict["PASSWORD"].replace("$", "\$")},
+        )
+
+        return outfile
+
+    def create_structure(self):
+        """
+        Create the basic directory structure on the remote server.
+        """
+        self.run("mkdir -p %s" % self.wwwroot)
+
+        with self.cd(self.project_root):
+            self.run("mkdir -p static backups media")
+            self.run("python3 -m venv venv")
+
+    def clean_old_database_backups(self, nb_backups_to_keep):
+        """
+        Remove old database backups from the system and keep `nb_backups_to_keep`.
+        """
+        backups = self.ls(self.backups_root)
+        backups = sorted(backups, reverse=True)
+
+        if len(backups) > nb_backups_to_keep:
+            backups_to_delete = backups[nb_backups_to_keep:]
+
+            for backup_to_delete in backups_to_delete:
+                self.run('rm "%s"' % os.path.join(self.backups_root, backup_to_delete))
+
+            print("%d backups deleted." % len(backups_to_delete))
+        else:
+            print("No backups to delete.")
+
+    def ls(self, path):
+        """
+        Return the list of the files in the given directory, omitting . and ...
+        """
+        with self.cd(path):
+            files = self.run("for i in *; do echo $i; done").stdout.strip()
+            files_list = files.replace("\r", "").split("\n")
+
+        return files_list
 
 
 def generate_secret_key():
@@ -155,164 +245,40 @@ def generate_secret_key():
     )
 
 
-def create_structure():
-    """
-    Create the basic directory structure on the remote server.
-    """
-    run("mkdir -p %s" % env.root)
-
-    with cd(env.root):
-        run("mkdir -p static backups")
-        run("python3 -m venv venv")
+def is_supported_db_engine(engine):
+    return engine == "django.db.backends.postgresql_psycopg2"
 
 
 @task
-def sync_settings():
-    """
-    Copy all settings defined in the environment to the server.
-    """
-    for setting, value in env.settings.items():
-        set_setting(setting, value=value)
-
-
-def set_setting(setting_key, value=None, description=None):
-    """
-    Sets the given setting to the given value on the remote server. If the
-    value is not provided, the user will be prompted for it.
-
-    TODO: use the description parameter to display a help text.
-    """
-    if value is None:
-        value = prompt("Please provide value for setting %s: " % setting_key)
-
-    with cd(os.path.join(get_project_root(), "envdir")):
-        put(StringIO(value), setting_key)
-
-
-@task
-def bootstrap():
-    """
-    Deploy the project for the first time. This will create the directory
-    structure, push the project and set the basic settings.
-
-    This task needs to be called alongside an environment task, eg. ``fab prod
-    bootstrap``.
-    """
-    create_structure()
-
-    execute(git_push, commit="master")
-
-    required_settings = set(
-        [
-            "DATABASE_URL",
-            "MEDIA_ROOT",
-            "STATIC_ROOT",
-            "MEDIA_URL",
-            "STATIC_URL",
-            "ALLOWED_HOSTS",
-        ]
-    )
-
-    env_settings = getattr(env, "settings", {})
-    for setting, value in env_settings.items():
-        set_setting(setting, value=value)
-
-    # Ask for settings that are required but were not set in the parameters
-    # file
-    for setting in required_settings - set(env_settings.keys()):
-        set_setting(setting)
-
-    set_setting(
-        "DJANGO_SETTINGS_MODULE", value="%s.config.settings.base" % env.project_name
-    )
-    set_setting("SECRET_KEY", value=generate_secret_key())
-
-    execute(install_requirements)
-    execute(collect_static)
-    execute(migrate_database)
-
-    execute(restart_process)
-
-
-@task
-def compile_assets():
-    local("npm install")
-    local("npm run build")
-    local(
-        "rsync -e 'ssh -p {port}' -r --exclude *.map --exclude *.swp static/dist/ "
-        "{user}@{host}:{path}".format(
-            host=env.host,
-            user=env.user,
-            port=env.port,
-            path=os.path.join(env.root, "static"),
-        )
-    )
-
-
-@task
-def deploy():
-    require("root", "project_name")
-
-    execute(git_push, commit="@")
-    dump_db(get_backups_root())
-
-    execute(install_requirements)
-    execute(compile_assets)
-    execute(collect_static)
-    execute(migrate_database)
-
-    execute(restart_process)
-    execute(clean_old_database_backups, nb_backups_to_keep=10)
-
-
-def dump_db(destination):
-    """
-    Dump the database to the given directory and return the path to the file created. This creates a gzipped SQL file.
-    """
-    with cd(get_project_root()), quiet():
-        db_credentials = run("cat envdir/DATABASE_URL")
-    db_credentials_dict = dj_database_url.parse(db_credentials)
-
-    if not is_supported_db_engine(db_credentials_dict["ENGINE"]):
-        raise NotImplementedError(
-            "The dump_db task doesn't support the remote database engine"
-        )
-
-    outfile = os.path.join(
-        destination, datetime.now().strftime("%Y-%m-%d_%H%M%S.sql.gz")
-    )
-
-    with shell_env(PGPASSWORD=db_credentials_dict["PASSWORD"].replace("$", "\$")):
-        run(
-            "pg_dump -O -x -h {host} -U {user} {db}|gzip > {outfile}".format(
-                host=db_credentials_dict["HOST"],
-                user=db_credentials_dict["USER"],
-                db=db_credentials_dict["NAME"],
-                outfile=outfile,
-            )
-        )
-
-    return outfile
-
-
-@task
-def fetch_db(destination="."):
+@remote
+def fetch_db(c, destination="."):
     """
     Dump the database on the remote host and retrieve it locally.
 
     The destination parameter controls where the dump should be stored locally.
     """
-    require("root")
+    dump_path = c.conn.dump_db("~")
+    filename = os.path.basename(dump_path)
 
-    dump_path = dump_db("~")
-    get(dump_path, destination)
-    run("rm %s" % dump_path)
+    subprocess.run(
+        [
+            "scp",
+            "-P",
+            str(c.conn.port),
+            "{user}@{host}:{directory}".format(
+                user=c.conn.user, host=c.conn.host, directory=dump_path
+            ),
+            destination,
+        ]
+    )
+    c.conn.run("rm %s" % dump_path)
 
-    return os.path.basename(dump_path)
+    return os.path.join(destination, filename)
 
 
 @task
-def import_db(dump_file=None):
+@remote
+def import_db(c, dump_file=None):
     """
     Restore the given database dump.
 
@@ -329,7 +295,7 @@ def import_db(dump_file=None):
         )
 
     if dump_file is None:
-        dump_file = fetch_db()
+        dump_file = fetch_db(c)
 
     db_info = {
         "host": db_credentials_dict["HOST"],
@@ -338,55 +304,238 @@ def import_db(dump_file=None):
         "db_dump": dump_file,
     }
 
-    with shell_env(PGPASSWORD=db_credentials_dict["PASSWORD"]):
-        with settings(warn_only=True):
-            local("dropdb -h {host} -U {user} {db}".format(**db_info))
-
-        local("createdb -h {host} -U {user} {db}".format(**db_info))
-        local("gunzip -c {db_dump}|psql -h {host} -U {user} {db}".format(**db_info))
+    c.run(
+        "dropdb -h {host} -U {user} {db}".format(**db_info),
+        env={"PGPASSWORD": db_credentials_dict["PASSWORD"].replace("$", "\$")},
+    )
+    c.run(
+        "createdb -h {host} -U {user} {db}".format(**db_info),
+        env={"PGPASSWORD": db_credentials_dict["PASSWORD"].replace("$", "\$")},
+    )
+    c.run(
+        "gunzip -c {db_dump}|psql -h {host} -U {user} {db}".format(**db_info),
+        env={"PGPASSWORD": db_credentials_dict["PASSWORD"].replace("$", "\$")},
+    )
 
 
 @task
-def clean_old_database_backups(nb_backups_to_keep):
+@remote
+def bootstrap(c):
     """
-    Remove old database backups from the system and keep `nb_backups_to_keep`.
+    Deploy the project for the first time. This will create the directory
+    structure, push the project and set the basic settings.
+
+    This task needs to be called alongside an environment task, eg. ``fab prod
+    bootstrap``.
     """
-    backups = ls(get_backups_root())
-    backups = sorted(backups, reverse=True)
+    c.conn.create_structure()
+    push_code_update(c, "HEAD")
+    install_requirements(c)
 
-    if len(backups) > nb_backups_to_keep:
-        backups_to_delete = backups[nb_backups_to_keep:]
+    required_settings = set(
+        [
+            "DATABASE_URL",
+            "MEDIA_ROOT",
+            "STATIC_ROOT",
+            "MEDIA_URL",
+            "STATIC_URL",
+            "ALLOWED_HOSTS",
+        ]
+    )
 
-        for backup_to_delete in backups_to_delete:
-            run('rm "%s"' % os.path.join(get_backups_root(), backup_to_delete))
+    env_settings = getattr(c.config, "settings", {})
+    for setting, value in env_settings.items():
+        c.conn.set_setting(setting, value=value)
 
-        print("%d backups deleted." % len(backups_to_delete))
-    else:
-        print("No backups to delete.")
+    # Ask for settings that are required but were not set in the parameters
+    # file
+    for setting in required_settings - set(env_settings.keys()):
+        c.conn.set_setting(setting)
+
+    c.conn.set_setting(
+        "DJANGO_SETTINGS_MODULE", value="%s.config.settings.base" % project_name
+    )
+    c.conn.set_setting("SECRET_KEY", value=generate_secret_key())
+
+    compile_assets(c)
+    dj_collect_static(c)
+    dj_migrate_database(c)
+    reload_uwsgi(c)
 
 
-def is_supported_db_engine(engine):
-    return engine == "django.db.backends.postgresql_psycopg2"
+@task
+@remote
+def push_code_update(c, git_ref):
+    """
+    Synchronize the remote code repository
+    """
+    with c.conn.cd(c.conn.wwwroot):
+        # First, check that the remote deployment directory exists
+        try:
+            c.conn.run("test -d .", hide=True)
+        except UnexpectedExit:
+            raise Exit(
+                "Provisioning not finished, directory {} doesn't exist!".format(
+                    c.config["root"]
+                )
+            )
+        # Now make sure there's git, and a git repository
+        try:
+            c.conn.git("--version", hide=True)
+        except UnexpectedExit:
+            raise Exit("Provisioning not finished, git not available!")
+
+        try:
+            c.conn.git("rev-parse --git-dir", hide=True)
+        except UnexpectedExit:
+            c.conn.git("init")
+            c.conn.git("checkout --orphan master")
+            c.conn.put(StringIO("Bootstrap"), os.path.join(c.conn.wwwroot, "bootstrap"))
+            c.conn.git("add bootstrap")
+            c.conn.git('commit -m "First non-empty commit"')
+
+    git_remote_url = "ssh://{user}@{host}:{port}/{directory}".format(
+        user=c.conn.user, host=c.conn.host, port=c.conn.port, directory=c.conn.wwwroot
+    )
+
+    # Now push our code to the remote, always as FABHEAD branch
+    porcelain.push(".", git_remote_url, "{}:FABHEAD".format(git_ref))
+
+    with c.conn.cd(c.conn.wwwroot):
+        c.conn.git("checkout -f master", hide=True)
+        c.conn.git("reset --hard FABHEAD")
+        c.conn.git("branch -d FABHEAD", hide=True)
+        c.conn.git("submodule update --init", hide=True)
+
+
+@task
+@remote
+def install_requirements(c):
+    """
+    Install project requirements in venv
+    """
+    try:
+        # Test that pip works
+        c.conn.pip("freeze", hide=True)
+    except UnexpectedExit:
+        c.conn.mk_venv()
+
+    c.conn.pip("install -r requirements/base.txt")
+
+
+@task
+@remote
+def sync_settings(c):
+    """
+    Synchronize the settings from the above environment to the server
+    """
+    for name, value in c.config.settings.items():
+        c.conn.set_setting(name, value, force=True)
+
+
+@task
+@remote
+def dj_collect_static(c):
+    """
+    Django: collect the statics
+    """
+    c.conn.manage_py("collectstatic --noinput")
+
+
+@task
+@remote
+def dj_migrate_database(c):
+    """
+    Django: Migrate the database
+    """
+    c.conn.manage_py("migrate")
+
+
+@task
+@remote
+def reload_uwsgi(c):
+    """
+    Django: Migrate the database
+    """
+    c.conn.run_in_wwwroot(
+        "touch %s" % os.path.join(c.conn.wwwroot, project_name, "config", "wsgi.py")
+    )
+
+
+@task
+def compile_assets(c):
+    subprocess.run(["npm", "install"])
+    subprocess.run(["npm", "run", "build"])
+
+    subprocess.run(
+        [
+            "rsync",
+            "-r",
+            "-e",
+            "ssh -p {port}".format(port=c.conn.port),
+            "--exclude",
+            "*.map",
+            "--exclude",
+            "*.swp",
+            "static/dist/",
+            "{user}@{host}:{path}".format(
+                host=c.conn.host,
+                user=c.conn.user,
+                path=os.path.join(c.conn.project_root, "static"),
+            ),
+        ]
+    )
+
+
+@task
+@remote
+def deploy(c):
+    """
+    "Update" deployment
+    """
+    push_code_update(c, "HEAD")
+    c.conn.dump_db(c.conn.backups_root)
+    install_requirements(c)
+    sync_settings(c)
+
+    compile_assets(c)
+    dj_collect_static(c)
+    dj_migrate_database(c)
+    reload_uwsgi(c)
+    c.conn.clean_old_database_backups(nb_backups_to_keep=10)
 
 
 # Environment handling stuff
 ############################
+def create_environment_task(name, env_conf):
+    """
+    Create a task function from an environment name
+    """
 
+    @task(name=name)
+    def load_environment(ctx):
+        conf = env_conf.copy()
+        conf["environment"] = name
+        # So now conf is the ENVIRONMENTS[env] dict plus "environment" pointing to the name
+        # Push them in the context config dict
+        ctx.config.load_overrides(conf)
+        # Add the common_settings in there
+        ctx.conn = CustomConnection(host=conf["host"], inline_ssh_env=True)
+        ctx.conn.config.load_overrides(conf)
 
-def get_environment_func(key, value):
-    def load_environment():
-        env.update(value)
-        env.environment = key
-
-    load_environment.__name__ = key
-    load_environment.__doc__ = "Definition of the %s environment." % key
-
+    load_environment.__doc__ = (
+        """Prepare connection and load config for %s environment""" % name
+    )
     return load_environment
 
 
-def load_environments(environments):
-    for (key, values) in environments.items():
-        globals()[key] = task(get_environment_func(key, values))
+def load_environments_tasks(environments):
+    """
+    Load environments as fabric tasks
+    """
+    for name, env_conf in environments.items():
+        globals()[name] = create_environment_task(name, env_conf)
 
 
-load_environments(ENVIRONMENTS)
+# Yes, do it
+load_environments_tasks(ENVIRONMENTS)

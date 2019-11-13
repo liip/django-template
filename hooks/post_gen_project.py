@@ -67,6 +67,16 @@ def patch_playbook(path):
             line = line.replace('# -', '-')
 
         patched_lines.append(line)
+    patched_lines.append(
+        """
+  tasks:
+  - name: Make sure rsync is installed
+    apt:
+      state: present
+      pkg: rsync
+    become: yes
+"""
+    )
 
     with open(path, 'w') as f:
         f.write(''.join(patched_lines))
