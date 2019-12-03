@@ -59,84 +59,82 @@ class CustomConnection(Connection):
     """
 
     @property
-    def project_root(self):
+    def site_root(self):
         return self.config.root
 
     @property
-    def wwwroot(self):
+    def project_root(self):
         """
         Return the path to the root of the project on the remote server.
         """
-        return os.path.join(self.project_root, project_name)
+        return os.path.join(self.site_root, project_name)
 
     @property
-    def venvpath(self):
-        return os.path.join(self.project_root, "venv")
+    def venv_path(self):
+        return os.path.join(self.site_root, "venv")
 
     @property
-    def envdirpath(self):
-        return os.path.join(self.wwwroot, "envdir")
+    def envdir_path(self):
+        return os.path.join(self.project_root, "envdir")
 
     @property
     def backups_root(self):
         """
         Return the path to the backups directory on the remote server.
         """
-        return os.path.join(self.project_root, "backups")
+        return os.path.join(self.site_root, "backups")
 
-    def run_in_wwwroot(self, cmd, **kwargs):
+    def run_in_project_root(self, cmd, **kwargs):
         """
-        Run command after a cd to the wwwroot
+        Run command after a cd to the project_root
         """
-        with self.cd(self.wwwroot):
+        with self.cd(self.project_root):
             return self.run(cmd, **kwargs)
 
     def git(self, gitcmd, **kwargs):
         """
-        git from the wwwroot
+        git from the project_root
         """
-        return self.run_in_wwwroot("git {}".format(gitcmd), **kwargs)
+        return self.run_in_project_root("git {}".format(gitcmd), **kwargs)
 
     def run_in_venv(self, cmd, args, **run_kwargs):
         """
         Binaries from the venv
         """
-        return self.run_in_wwwroot(
-            "{} {}".format(os.path.join(self.venvpath, "bin", cmd), args), **run_kwargs
+        return self.run_in_project_root(
+            "{} {}".format(os.path.join(self.venv_path, "bin", cmd), args), **run_kwargs
         )
 
     def mk_venv(self, **run_kwargs):
         """
         Create the venv
         """
-        return self.run_in_wwwroot(
-            "virtualenv --python=/usr/bin/python3 {}".format(self.venvpath),
-            **run_kwargs
-        )
+
+        with self.cd(self.site_root):
+            self.run("python3 -m venv venv", **run_kwargs)
 
     def pip(self, args, **run_kwargs):
         """
-        pip from the venv, in the wwwroot
+        pip from the venv, in the project_root
         """
         return self.run_in_venv("pip", args, **run_kwargs)
 
     def python(self, args, **run_kwargs):
         """
-        python from the venv, in the wwwroot
+        python from the venv, in the project_root
         """
         return self.run_in_venv("python", args, **run_kwargs)
 
     def manage_py(self, args, **run_kwargs):
         """
-        manage.py with the python from the venv, in the wwwroot
+        manage.py with the python from the venv, in the project_root
         """
-        env = {}
         try:
-            env["DJANGO_SETTINGS_MODULE"] = self.config.settings[
-                "DJANGO_SETTINGS_MODULE"
-            ]
+            env = {
+                "DJANGO_SETTINGS_MODULE": self.config.settings["DJANGO_SETTINGS_MODULE"]
+            }
         except KeyError:
-            pass
+            env = {}
         return self.python("./manage.py {}".format(args), env=env, **run_kwargs)
 
     def set_setting(self, name, value=None, force: bool = True):
@@ -151,14 +149,15 @@ class CustomConnection(Connection):
         if isinstance(value, bool):
             value = int(value)
 
-        envfile_path = os.path.join(self.envdirpath, name)
+        envfile_path = os.path.join(self.envdir_path, name)
 
         will_write = force
-        try:
-            # Test that it does exist
-            self.run_in_wwwroot("test -r {}".format(envfile_path), hide=True)
-        except UnexpectedExit:
-            will_write = True
+        if force:
+            try:
+                # Test that it does exist
+                self.run_in_project_root("test -r {}".format(envfile_path), hide=True)
+            except UnexpectedExit:
+                will_write = True
 
         if will_write:
             self.put(StringIO("{}\n".format(value)), envfile_path)
@@ -168,8 +167,10 @@ class CustomConnection(Connection):
         Dump the database to the given directory and return the path to the file created.
         This creates a gzipped SQL file.
         """
-        with self.cd(self.wwwroot):
-            db_credentials = self.run("cat envdir/DATABASE_URL", hide=True).stdout.strip()
+        with self.cd(self.project_root):
+            db_credentials = self.run(
+                "cat envdir/DATABASE_URL", hide=True
+            ).stdout.strip()
         db_credentials_dict = dj_database_url.parse(db_credentials)
 
         if not is_supported_db_engine(db_credentials_dict["ENGINE"]):
@@ -197,11 +198,11 @@ class CustomConnection(Connection):
         """
         Create the basic directory structure on the remote server.
         """
-        self.run("mkdir -p %s" % self.wwwroot)
+        self.run("mkdir -p %s" % self.project_root)
 
-        with self.cd(self.project_root):
+        with self.cd(self.site_root):
             self.run("mkdir -p static backups media")
-            self.run("python3 -m venv venv")
+            self.mk_venv()
 
     def clean_old_database_backups(self, nb_backups_to_keep):
         """
@@ -213,9 +214,12 @@ class CustomConnection(Connection):
         if len(backups) > nb_backups_to_keep:
             backups_to_delete = backups[nb_backups_to_keep:]
 
-            for backup_to_delete in backups_to_delete:
-                self.run('rm "%s"' % os.path.join(self.backups_root, backup_to_delete))
-
+        if backups_to_delete:
+            file_to_remove = [
+                os.path.join(self.backups_root, backup_to_delete)
+                for backup_to_delete in backups_to_delete
+            ]
+            self.run('rm "%s"' % '" "'.join(file_to_remove))
             print("%d backups deleted." % len(backups_to_delete))
         else:
             print("No backups to delete.")
@@ -246,7 +250,10 @@ def generate_secret_key():
 
 
 def is_supported_db_engine(engine):
-    return engine == "django.db.backends.postgresql_psycopg2"
+    return engine in [
+        "django.db.backends.postgresql_psycopg2",
+        "django.db.backends.postgresql",
+    ]
 
 
 @task
@@ -303,18 +310,11 @@ def import_db(c, dump_file=None):
         "db": db_credentials_dict["NAME"],
         "db_dump": dump_file,
     }
-
+    env = {"PGPASSWORD": db_credentials_dict["PASSWORD"].replace("$", "\$")}
+    c.run("dropdb -h {host} -U {user} {db}".format(**db_info), env=env)
+    c.run("createdb -h {host} -U {user} {db}".format(**db_info), env=env)
     c.run(
-        "dropdb -h {host} -U {user} {db}".format(**db_info),
-        env={"PGPASSWORD": db_credentials_dict["PASSWORD"].replace("$", "\$")},
-    )
-    c.run(
-        "createdb -h {host} -U {user} {db}".format(**db_info),
-        env={"PGPASSWORD": db_credentials_dict["PASSWORD"].replace("$", "\$")},
-    )
-    c.run(
-        "gunzip -c {db_dump}|psql -h {host} -U {user} {db}".format(**db_info),
-        env={"PGPASSWORD": db_credentials_dict["PASSWORD"].replace("$", "\$")},
+        "gunzip -c {db_dump}|psql -h {host} -U {user} {db}".format(**db_info), env=env
     )
 
 
@@ -365,11 +365,29 @@ def bootstrap(c):
 
 @task
 @remote
+def deploy(c):
+    """
+    "Update" deployment
+    """
+    push_code_update(c, "HEAD")
+    c.conn.dump_db(c.conn.backups_root)
+    install_requirements(c)
+    sync_settings(c)
+
+    compile_assets(c)
+    dj_collect_static(c)
+    dj_migrate_database(c)
+    reload_uwsgi(c)
+    c.conn.clean_old_database_backups(nb_backups_to_keep=10)
+
+
+@task
+@remote
 def push_code_update(c, git_ref):
     """
     Synchronize the remote code repository
     """
-    with c.conn.cd(c.conn.wwwroot):
+    with c.conn.cd(c.conn.project_root):
         # First, check that the remote deployment directory exists
         try:
             c.conn.run("test -d .", hide=True)
@@ -390,18 +408,23 @@ def push_code_update(c, git_ref):
         except UnexpectedExit:
             c.conn.git("init")
             c.conn.git("checkout --orphan master")
-            c.conn.put(StringIO("Bootstrap"), os.path.join(c.conn.wwwroot, "bootstrap"))
+            c.conn.put(
+                StringIO("Bootstrap"), os.path.join(c.conn.project_root, "bootstrap")
+            )
             c.conn.git("add bootstrap")
             c.conn.git('commit -m "First non-empty commit"')
 
     git_remote_url = "ssh://{user}@{host}:{port}/{directory}".format(
-        user=c.conn.user, host=c.conn.host, port=c.conn.port, directory=c.conn.wwwroot
+        user=c.conn.user,
+        host=c.conn.host,
+        port=c.conn.port,
+        directory=c.conn.project_root,
     )
 
     # Now push our code to the remote, always as FABHEAD branch
     porcelain.push(".", git_remote_url, "{}:FABHEAD".format(git_ref))
 
-    with c.conn.cd(c.conn.wwwroot):
+    with c.conn.cd(c.conn.project_root):
         c.conn.git("checkout -f master", hide=True)
         c.conn.git("reset --hard FABHEAD")
         c.conn.git("branch -d FABHEAD", hide=True)
@@ -415,8 +438,7 @@ def install_requirements(c):
     Install project requirements in venv
     """
     try:
-        # Test that pip works
-        c.conn.pip("freeze", hide=True)
+        c.conn.run("test -r {}".format(c.conn.venv_path), hide=True)
     except UnexpectedExit:
         c.conn.mk_venv()
 
@@ -457,12 +479,14 @@ def reload_uwsgi(c):
     """
     Django: Migrate the database
     """
-    c.conn.run_in_wwwroot(
-        "touch %s" % os.path.join(c.conn.wwwroot, project_name, "config", "wsgi.py")
+    c.conn.run_in_project_root(
+        "touch %s"
+        % os.path.join(c.conn.project_root, project_name, "config", "wsgi.py")
     )
 
 
 @task
+@remote
 def compile_assets(c):
     subprocess.run(["npm", "install"])
     subprocess.run(["npm", "run", "build"])
@@ -481,29 +505,10 @@ def compile_assets(c):
             "{user}@{host}:{path}".format(
                 host=c.conn.host,
                 user=c.conn.user,
-                path=os.path.join(c.conn.project_root, "static"),
+                path=os.path.join(c.conn.site_root, "static"),
             ),
         ]
     )
-
-
-@task
-@remote
-def deploy(c):
-    """
-    "Update" deployment
-    """
-    push_code_update(c, "HEAD")
-    c.conn.dump_db(c.conn.backups_root)
-    install_requirements(c)
-    sync_settings(c)
-
-    compile_assets(c)
-    dj_collect_static(c)
-    dj_migrate_database(c)
-    reload_uwsgi(c)
-    c.conn.clean_old_database_backups(nb_backups_to_keep=10)
-
 
 # Environment handling stuff
 ############################
