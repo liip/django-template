@@ -141,18 +141,10 @@ class CustomConnection(Connection):
         """
         Set a setting in the environment directory, for use by Django
         """
-
-        if value is None:
-            value = input("Value for {}: ".format(name))
-
-        # Convert booleans into ints, so that Django takes them back easily
-        if isinstance(value, bool):
-            value = int(value)
-
         envfile_path = os.path.join(self.envdir_path, name)
 
         will_write = force
-        if force:
+        if not force:
             try:
                 # Test that it does exist
                 self.run_in_project_root("test -r {}".format(envfile_path), hide=True)
@@ -160,6 +152,12 @@ class CustomConnection(Connection):
                 will_write = True
 
         if will_write:
+            if value is None:
+                value = input("Value for {}: ".format(name))
+
+            # Convert booleans into ints, so that Django takes them back easily
+            if isinstance(value, bool):
+                value = int(value)
             self.put(StringIO("{}\n".format(value)), envfile_path)
 
     def dump_db(self, destination):
@@ -202,7 +200,6 @@ class CustomConnection(Connection):
 
         with self.cd(self.site_root):
             self.run("mkdir -p static backups media")
-            self.mk_venv()
 
     def clean_old_database_backups(self, nb_backups_to_keep):
         """
@@ -213,8 +210,6 @@ class CustomConnection(Connection):
 
         if len(backups) > nb_backups_to_keep:
             backups_to_delete = backups[nb_backups_to_keep:]
-
-        if backups_to_delete:
             file_to_remove = [
                 os.path.join(self.backups_root, backup_to_delete)
                 for backup_to_delete in backups_to_delete
@@ -320,7 +315,7 @@ def import_db(c, dump_file=None):
 
 @task
 @remote
-def bootstrap(c):
+def deploy(c):
     """
     Deploy the project for the first time. This will create the directory
     structure, push the project and set the basic settings.
@@ -330,50 +325,9 @@ def bootstrap(c):
     """
     c.conn.create_structure()
     push_code_update(c, "HEAD")
-    install_requirements(c)
-
-    required_settings = set(
-        [
-            "DATABASE_URL",
-            "MEDIA_ROOT",
-            "STATIC_ROOT",
-            "MEDIA_URL",
-            "STATIC_URL",
-            "ALLOWED_HOSTS",
-        ]
-    )
-
-    env_settings = getattr(c.config, "settings", {})
-    for setting, value in env_settings.items():
-        c.conn.set_setting(setting, value=value)
-
-    # Ask for settings that are required but were not set in the parameters
-    # file
-    for setting in required_settings - set(env_settings.keys()):
-        c.conn.set_setting(setting)
-
-    c.conn.set_setting(
-        "DJANGO_SETTINGS_MODULE", value="%s.config.settings.base" % project_name
-    )
-    c.conn.set_setting("SECRET_KEY", value=generate_secret_key())
-
-    compile_assets(c)
-    dj_collect_static(c)
-    dj_migrate_database(c)
-    reload_uwsgi(c)
-
-
-@task
-@remote
-def deploy(c):
-    """
-    "Update" deployment
-    """
-    push_code_update(c, "HEAD")
+    sync_settings(c)
     c.conn.dump_db(c.conn.backups_root)
     install_requirements(c)
-    sync_settings(c)
-
     compile_assets(c)
     dj_collect_static(c)
     dj_migrate_database(c)
@@ -451,8 +405,31 @@ def sync_settings(c):
     """
     Synchronize the settings from the above environment to the server
     """
-    for name, value in c.config.settings.items():
-        c.conn.set_setting(name, value, force=True)
+
+    required_settings = set(
+        [
+            "DATABASE_URL",
+            "MEDIA_ROOT",
+            "STATIC_ROOT",
+            "MEDIA_URL",
+            "STATIC_URL",
+            "ALLOWED_HOSTS",
+        ]
+    )
+
+    env_settings = getattr(c.config, "settings", {})
+    for setting, value in env_settings.items():
+        c.conn.set_setting(setting, value=value)
+
+    # Ask for settings that are required but were not set in the parameters
+    # file
+    for setting in required_settings - set(env_settings.keys()):
+        c.conn.set_setting(setting, force=False)
+
+    c.conn.set_setting(
+        "DJANGO_SETTINGS_MODULE", value="%s.config.settings.base" % project_name, force=False
+    )
+    c.conn.set_setting("SECRET_KEY", value=generate_secret_key(), force=False)
 
 
 @task

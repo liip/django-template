@@ -15,7 +15,7 @@ def uninstall_docker():
     files_to_remove = {
         'entrypoint.sh', 'entrypoint-frontend.sh', 'docker-compose.yml',
         'docker-compose.override.example.yml', 'Dockerfile',
-        'Dockerfile-frontend', '.gitlab-ci.yml', 'scripts/run_tests_docker.sh'
+        'Dockerfile-frontend', '.gitlab-ci.yml'
     }
 
     for file_ in files_to_remove:
