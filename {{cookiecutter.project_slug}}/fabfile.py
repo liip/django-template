@@ -199,9 +199,9 @@ class CustomConnection(Connection):
         This creates a gzipped SQL file.
         """
         with self.cd(self.project_root):
-            db_credentials = self.run(
-                "cat envdir/DATABASE_URL", hide=True
-            ).stdout.strip()
+            env_file = os.path.join(self.envdir_path, "DATABASE_URL")
+            db_credentials = self.run("cat " + env_file, hide=True).stdout.strip()
+
         db_credentials_dict = dj_database_url.parse(db_credentials)
 
         if not is_supported_db_engine(db_credentials_dict["ENGINE"]):
@@ -325,8 +325,10 @@ def import_db(c, dump_file=None):
     The dump must be a gzipped SQL dump. If the dump_file parameter is not set,
     the database will be dumped and retrieved from the remote host.
     """
-    with open("envdir/DATABASE_URL", "r") as db_credentials_file:
-        db_credentials = db_credentials_file.read()
+    db_credentials = os.environ.get("DATABASE_URL")
+    if not db_credentials:
+        with open("envdir/DATABASE_URL", "r") as db_credentials_file:
+            db_credentials = db_credentials_file.read()
     db_credentials_dict = dj_database_url.parse(db_credentials)
 
     if not is_supported_db_engine(db_credentials_dict["ENGINE"]):
