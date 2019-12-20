@@ -57,7 +57,7 @@ def remote(task_func):
 
 def ensure_absolute_path(path):
     if not os.path.isabs(path):
-        raise ValueError("{!r} is not an absolute path.")
+        raise ValueError("{!r} is not an absolute path.".format(path))
 
 
 class CustomConnection(Connection):
@@ -190,7 +190,7 @@ class CustomConnection(Connection):
 
             # Convert booleans into values understood as such by Django
             if isinstance(value, bool):
-                value = value = "1" if value else ""
+                value = "1" if value else ""
             self.put(StringIO("{}\n".format(value)), envfile_path)
 
     def dump_db(self, destination):
