@@ -344,6 +344,14 @@ def import_db(c, dump_file=None):
         "db_dump": dump_file,
     }
     env = {"PGPASSWORD": db_credentials_dict["PASSWORD"].replace("$", "\$")}
+    close_sessions_command = """
+        psql -h "{host}" -U "{user}" template1 -c "
+            SELECT pg_terminate_backend(pg_stat_activity.pid)
+            FROM pg_stat_activity
+            WHERE pg_stat_activity.datname = '{db}' AND pid != pg_backend_pid();
+        "
+    """.strip()
+    c.run(close_sessions_command.format(**db_info), env=env, hide="out")
     c.run("dropdb -h '{host}' -U '{user}' '{db}'".format(**db_info), env=env)
     c.run("createdb -h '{host}' -U '{user}' {db}".format(**db_info), env=env)
     c.run(
