@@ -10,6 +10,6 @@ tox
 werkzeug
 
 # Deployment requirements
-Fabric3
-gitric
-isort
+fabric
+pip-tools
+dulwich
