@@ -1,4 +1,5 @@
 import functools
+import inspect
 import os
 import random
 import subprocess
@@ -50,7 +51,13 @@ def remote(task_func):
             raise RuntimeError("Trying to run a remote task with no environment loaded")
         return task_func(ctx, *args, **kwargs)
 
+    call_task_with_connection.__signature__ = inspect.signature(task_func)
     return call_task_with_connection
+
+
+def ensure_absolute_path(path):
+    if not os.path.isabs(path):
+        raise ValueError("{!r} is not an absolute path.")
 
 
 class CustomConnection(Connection):
@@ -83,6 +90,32 @@ class CustomConnection(Connection):
         Return the path to the backups directory on the remote server.
         """
         return os.path.join(self.site_root, "backups")
+
+    @property
+    def media_root(self):
+        """
+        Return the path to the media directory on the remote server.
+        """
+        try:
+            path = self.config.settings["MEDIA_ROOT"]
+        except KeyError:
+            return os.path.join(self.site_root, "media")
+        else:
+            ensure_absolute_path(path)
+            return path
+
+    @property
+    def static_root(self):
+        """
+        Return the path to the static directory on the remote server.
+        """
+        try:
+            path = self.config.settings["STATIC_ROOT"]
+        except KeyError:
+            return os.path.join(self.site_root, "static")
+        else:
+            ensure_absolute_path(path)
+            return path
 
     def run_in_project_root(self, cmd, **kwargs):
         """
@@ -155,9 +188,9 @@ class CustomConnection(Connection):
             if value is None:
                 value = input("Value for {}: ".format(name))
 
-            # Convert booleans into ints, so that Django takes them back easily
+            # Convert booleans into values understood as such by Django
             if isinstance(value, bool):
-                value = int(value)
+                value = value = "1" if value else ""
             self.put(StringIO("{}\n".format(value)), envfile_path)
 
     def dump_db(self, destination):
@@ -196,10 +229,16 @@ class CustomConnection(Connection):
         """
         Create the basic directory structure on the remote server.
         """
-        self.run("mkdir -p %s" % self.project_root)
-
-        with self.cd(self.site_root):
-            self.run("mkdir -p static backups media")
+        command = " ".join(
+            [
+                "mkdir -p",
+                self.project_root,
+                self.backups_root,
+                self.static_root,
+                self.media_root,
+            ]
+        )
+        self.run(command)
 
     def clean_old_database_backups(self, nb_backups_to_keep):
         """
@@ -224,7 +263,7 @@ class CustomConnection(Connection):
         Return the list of the files in the given directory, omitting . and ...
         """
         with self.cd(path):
-            files = self.run("for i in *; do echo $i; done").stdout.strip()
+            files = self.run("for i in *; do echo $i; done", hide=True).stdout.strip()
             files_list = files.replace("\r", "").split("\n")
 
         return files_list
@@ -279,7 +318,6 @@ def fetch_db(c, destination="."):
 
 
 @task
-@remote
 def import_db(c, dump_file=None):
     """
     Restore the given database dump.
@@ -317,11 +355,7 @@ def import_db(c, dump_file=None):
 @remote
 def deploy(c):
     """
-    Deploy the project for the first time. This will create the directory
-    structure, push the project and set the basic settings.
-
-    This task needs to be called alongside an environment task, eg. ``fab prod
-    bootstrap``.
+    Execute all deployment steps
     """
     c.conn.create_structure()
     push_code_update(c, "HEAD")
@@ -361,12 +395,6 @@ def push_code_update(c, git_ref):
             c.conn.git("rev-parse --git-dir", hide=True)
         except UnexpectedExit:
             c.conn.git("init")
-            c.conn.git("checkout --orphan master")
-            c.conn.put(
-                StringIO("Bootstrap"), os.path.join(c.conn.project_root, "bootstrap")
-            )
-            c.conn.git("add bootstrap")
-            c.conn.git('commit -m "First non-empty commit"')
 
     git_remote_url = "ssh://{user}@{host}:{port}/{directory}".format(
         user=c.conn.user,
@@ -379,8 +407,7 @@ def push_code_update(c, git_ref):
     porcelain.push(".", git_remote_url, "{}:FABHEAD".format(git_ref))
 
     with c.conn.cd(c.conn.project_root):
-        c.conn.git("checkout -f master", hide=True)
-        c.conn.git("reset --hard FABHEAD")
+        c.conn.git("checkout -f -B master FABHEAD", hide=True)
         c.conn.git("branch -d FABHEAD", hide=True)
         c.conn.git("submodule update --init", hide=True)
 
@@ -427,7 +454,9 @@ def sync_settings(c):
         c.conn.set_setting(setting, force=False)
 
     c.conn.set_setting(
-        "DJANGO_SETTINGS_MODULE", value="%s.config.settings.base" % project_name, force=False
+        "DJANGO_SETTINGS_MODULE",
+        value="%s.config.settings.base" % project_name,
+        force=False,
     )
     c.conn.set_setting("SECRET_KEY", value=generate_secret_key(), force=False)
 
@@ -454,7 +483,7 @@ def dj_migrate_database(c):
 @remote
 def reload_uwsgi(c):
     """
-    Django: Migrate the database
+    Reload uWSGI workers
     """
     c.conn.run_in_project_root(
         "touch %s"
@@ -478,14 +507,15 @@ def compile_assets(c):
             "*.map",
             "--exclude",
             "*.swp",
-            "static/dist/",
+            "static/dist",
             "{user}@{host}:{path}".format(
                 host=c.conn.host,
                 user=c.conn.user,
-                path=os.path.join(c.conn.site_root, "static"),
+                path=os.path.join(c.conn.static_root),
             ),
         ]
     )
+
 
 # Environment handling stuff
 ############################
