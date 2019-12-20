@@ -214,7 +214,7 @@ class CustomConnection(Connection):
         )
 
         self.run(
-            "pg_dump -O -x -h {host} -U {user} {db}|gzip > {outfile}".format(
+            "pg_dump -O -x -h '{host}' -U '{user}' '{db}'|gzip > {outfile}".format(
                 host=db_credentials_dict["HOST"],
                 user=db_credentials_dict["USER"],
                 db=db_credentials_dict["NAME"],
@@ -344,10 +344,12 @@ def import_db(c, dump_file=None):
         "db_dump": dump_file,
     }
     env = {"PGPASSWORD": db_credentials_dict["PASSWORD"].replace("$", "\$")}
-    c.run("dropdb -h {host} -U {user} {db}".format(**db_info), env=env)
-    c.run("createdb -h {host} -U {user} {db}".format(**db_info), env=env)
+    c.run("dropdb -h '{host}' -U '{user}' '{db}'".format(**db_info), env=env)
+    c.run("createdb -h '{host}' -U '{user}' {db}".format(**db_info), env=env)
     c.run(
-        "gunzip -c {db_dump}|psql -h {host} -U {user} {db}".format(**db_info), env=env
+        "gunzip -c {db_dump}|psql -h '{host}' -U '{user}' '{db}'".format(**db_info),
+        env=env,
+        hide="out",
     )
 
 
