@@ -13,6 +13,7 @@ test:
   variables:
     DJANGO_SETTINGS_MODULE: "{{ cookiecutter.project_slug }}.config.settings.test"
     DATABASE_URL: postgresql://postgres:postgres@db/postgres
+    POSTGRES_PASSWORD: postgres
     PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
   cache:
     key: *test_image
