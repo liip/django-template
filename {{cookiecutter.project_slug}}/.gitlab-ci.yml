@@ -4,7 +4,6 @@ stages:
 test:
   stage: test
   tags:
-    - docker
     - docker-nonswiss-ok
   image: &test_image 'python:3.7.4-buster'
   services:
