@@ -1,5 +1,5 @@
-{{ cookiecutter.project_name }}
-=======
+# {{ cookiecutter.project_name }}
+
 {%- if cookiecutter.virtualization_tool == 'drifter' %}
 
 ## Installation
@@ -16,9 +16,11 @@ npm run build
 ./manage.py runserver
 ```
 
-Then point your browser to http://{{ cookiecutter.project_slug|replace('_', '-') }}.lo/.
+Then point your browser to http://{{ cookiecutter.project*slug|replace('*', '-') }}.lo/.
 
 ## Front-end development
+
+### Getting Started
 
 SSH into the box and run:
 
@@ -26,8 +28,32 @@ SSH into the box and run:
 npm start
 ```
 
-Then point your browser to http://{{ cookiecutter.project_slug|replace('_', '-') }}.lo:3000/.
+Then point your browser to http://{{ cookiecutter.project*slug|replace('*', '-') }}.lo:3000/.
 {% elif cookiecutter.virtualization_tool == 'docker' %}
+
+### Build
+
+You can build a static version of your assets inside the box:
+
+```bash
+npm run build
+```
+
+### Formatting and Linting
+
+It’s recommended to have Prettier, EsLint and Stylelint enabled in your Editor.
+
+You can manually check that the code matches with the guidelines by running:
+
+```bash
+npm run validate
+```
+
+You can automatically fix all the offenses tools are capable of by running:
+
+```bash
+npm run format
+```
 
 ## Dev setup
 
@@ -44,8 +70,9 @@ you want to reset the database.
 ## Automated tests
 
 To run backend tests and lint checks, run `scripts/run_tests.sh` in the `backend` container:
-* `docker-compose exec backend scripts/run_tests.sh`
-* or `docker-compose run --rm backend scripts/run_tests.sh` if the `backend` service is not already running
+
+-   `docker-compose exec backend scripts/run_tests.sh`
+-   or `docker-compose run --rm backend scripts/run_tests.sh` if the `backend` service is not already running
 
 CLI arguments are forwarded to `pytest`.
 For example, running tests with `scripts/run_tests.sh {{ cookiecutter.project_slug }} --reuse-db` avoids

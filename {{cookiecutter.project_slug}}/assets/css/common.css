@@ -1,0 +1,21 @@
+/*----------------------------------------*\
+  Main stylesheet
+\*----------------------------------------*/
+
+/**
+* Base
+*/
+
+@import "tailwindcss/base";
+
+/**
+* Components
+*/
+
+@import "tailwindcss/components";
+
+/**
+* Utilities
+*/
+
+@import "tailwindcss/utilities";
