@@ -78,4 +78,3 @@ For example, running tests with `scripts/run_tests.sh {{ cookiecutter.project_sl
 re-creating the database from scratch on each run.
 
 {%- endif %}
-”
