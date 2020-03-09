@@ -4,10 +4,7 @@
   },
   "parserOptions": {
     "parser": "babel-eslint",
-    "ecmaVersion": 2018
+    "ecmaVersion": 2020
   },
-  "extends": [
-    "rawbot",
-    "plugin:prettier/recommended"
-  ]
+  "extends": ["rawbot", "plugin:prettier/recommended"]
 }

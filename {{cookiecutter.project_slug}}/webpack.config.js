@@ -10,11 +10,6 @@ module.exports = {
   mode: process.env.NODE_ENV,
   devtool: 'inline-source-map',
   resolve: {
-    modules: [
-      path.resolve(__dirname, 'assets/'),
-      path.resolve(__dirname, 'assets/js/'),
-      path.resolve(__dirname, 'node_modules'),
-    ],
     extensions: ['.js', '.css'],
     alias: {
       '@': path.resolve(__dirname, 'assets'),
@@ -34,9 +29,6 @@ module.exports = {
         test: /\.js$/,
         exclude: /node_modules/,
         loader: 'babel-loader',
-        options: {
-          presets: [['@babel/preset-env', { modules: 'commonjs' }]],
-        },
       },
       {
         test: /\.css$/,
@@ -86,9 +78,7 @@ module.exports = {
       filename: '[name].css',
     }),
     new SpriteLoaderPlugin(),
-    new CleanWebpackPlugin({
-      cleanOnceBeforeBuildPatterns: ['**/*', '!VERSION'],
-    }),
+    new CleanWebpackPlugin(),
   ],
   devServer: {
     proxy: {

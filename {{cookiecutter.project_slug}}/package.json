@@ -8,11 +8,11 @@
   "scripts": {
     "start": "NODE_ENV=development webpack-dev-server --hot",
     "build": "NODE_ENV=production webpack",
-    "eslint": "eslint 'assets/**/*.js'",
+    "eslint": "eslint 'assets/js/**/*.js'",
     "eslint:fix": "npm run eslint -- --fix",
-    "stylelint": "stylelint 'assets/**/*.css'",
+    "stylelint": "stylelint 'assets/css/**/*.css'",
     "stylelint:fix": "npm run stylelint -- --fix",
-    "prettier": "prettier 'assets/**/*.js' --list-different",
+    "prettier": "prettier 'assets/js/**/*.js' --list-different",
     "prettier:fix": "npm run prettier -- --write",
     "validate": "npm run eslint && npm run prettier && npm run stylelint",
     "format": "npm run eslint:fix && npm run prettier:fix && npm run stylelint:fix"
