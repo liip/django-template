@@ -93,10 +93,7 @@ module.exports = {
     // sockPort: 443,
     compress: true,
     overlay: true,
-    contentBase: [
-      './{{ cookiecutter.project_slug }}/**/templates/*.html',
-      './{{ cookiecutter.project_slug }}/**/templates/cms/**/*.html',
-    ],
+    contentBase: ['./{{ cookiecutter.project_slug }}/**/templates/**/*.html'],
     watchContentBase: true,
   },
   optimization: {
