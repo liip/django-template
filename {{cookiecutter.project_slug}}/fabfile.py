@@ -359,12 +359,13 @@ def deploy(c):
     """
     Execute all deployment steps
     """
+    compile_assets()
     c.conn.create_structure()
     push_code_update(c, "HEAD")
     sync_settings(c)
     c.conn.dump_db(c.conn.backups_root)
     install_requirements(c)
-    compile_assets(c)
+    sync_assets(c)
     dj_collect_static(c)
     dj_migrate_database(c)
     reload_uwsgi(c)
@@ -494,11 +495,14 @@ def reload_uwsgi(c):
 
 
 @task
-@remote
-def compile_assets(c):
+def compile_assets():
     subprocess.run(["npm", "install"])
     subprocess.run(["npm", "run", "build"])
 
+
+@task
+@remote
+def sync_assets(c):
     subprocess.run(
         [
             "rsync",
