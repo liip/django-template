@@ -1,20 +1,22 @@
 /* eslint-env node */
 const path = require('path');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const TerserJSPlugin = require('terser-webpack-plugin');
 const SpriteLoaderPlugin = require('svg-sprite-loader/plugin');
+const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 
 module.exports = {
   mode: process.env.NODE_ENV,
+  devtool: 'inline-source-map',
   resolve: {
-    modules: [
-      path.resolve(__dirname, 'assets/scripts'),
-      path.resolve(__dirname, 'assets'),
-      'node_modules',
-    ],
-    extensions: ['.js'],
+    extensions: ['.js', '.css'],
+    alias: {
+      '@': path.resolve(__dirname, 'assets'),
+    },
   },
   entry: {
-    common: path.resolve(__dirname, 'assets/scripts/common.js'),
+    common: path.resolve(__dirname, 'assets/js/common.js'),
   },
   output: {
     path: path.resolve(__dirname, 'static/dist'),
@@ -29,7 +31,7 @@ module.exports = {
         loader: 'babel-loader',
       },
       {
-        test: /\.scss$/,
+        test: /\.css$/,
         use: [
           {
             loader: MiniCssExtractPlugin.loader,
@@ -38,16 +40,7 @@ module.exports = {
             },
           },
           'css-loader',
-          {
-            loader: 'postcss-loader',
-            options: {
-              plugins: [
-                require('autoprefixer')(),
-                require('cssnano')(),
-              ],
-            },
-          },
-          'sass-loader',
+          'postcss-loader',
         ],
       },
       {
@@ -85,37 +78,25 @@ module.exports = {
       filename: '[name].css',
     }),
     new SpriteLoaderPlugin(),
+    new CleanWebpackPlugin(),
   ],
   devServer: {
     proxy: {
       '**': {
-        target: process.env.BACKEND_URL || "http://backend:8000",
+        target: process.env.BACKEND_URL || 'http://backend:8000',
       },
     },
-    allowedHosts: (process.env.ALLOWED_HOSTS || "localhost").split(/\s+/),
+    allowedHosts: (process.env.ALLOWED_HOSTS || 'localhost').split(/\s+/),
     host: '0.0.0.0',
     port: 3000,
+    // Enable `sockPort` if you use Pontsun configuration
+    // sockPort: 443,
     compress: true,
-    // Polling is required inside Vagrant boxes
-    watchOptions: {
-      poll: true,
-    },
     overlay: true,
-    // Here you can specify folders that contain your views
-    // So they’ll trigger a page reload when you change them
-    // contentBase: ['./app/views'],
-    // watchContentBase: true,
+    contentBase: ['./{{ cookiecutter.project_slug }}/**/templates/**/*.html'],
+    watchContentBase: true,
   },
   optimization: {
-    splitChunks: {
-      cacheGroups: {
-        styles: {
-          name: 'styles',
-          test: /\.css$/,
-          chunks: 'all',
-          enforce: true,
-        },
-      },
-    },
+    minimizer: [new TerserJSPlugin(), new OptimizeCSSAssetsPlugin()],
   },
 };
