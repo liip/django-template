@@ -1,5 +1,12 @@
 FROM node:10-buster
 
+ARG USER_ID=1000
+ARG GROUP_ID=1000
+
+RUN set -x; \
+    groupmod -g $GROUP_ID node && \
+    usermod -u $USER_ID node
+
 USER node
 WORKDIR /code
 
