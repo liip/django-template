@@ -287,6 +287,7 @@ def is_supported_db_engine(engine):
     return engine in [
         "django.db.backends.postgresql_psycopg2",
         "django.db.backends.postgresql",
+        "django.contrib.gis.db.backends.postgis",
     ]
 
 
