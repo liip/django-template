@@ -31,17 +31,10 @@
 #   &x-environment
 #   ALLOWED_HOSTS: >-
 #     {{ subdomain }}.docker.test
-# x-build-args:
-#   &x-build-args
-#   USER_ID: 1001  # If you're not uid=1000
-#   GROUP_ID: 1001 # If you're not gid=1000
 # services:
 #   backend:
 #     environment:
 #       <<: *x-environment
-#     build:
-#       args:
-#         <<: *x-build-args
 #   frontend:
 #     networks:
 #       - default
@@ -54,9 +47,6 @@
 #       - 'traefik.frontend.rule=Host:{{ subdomain }}.docker.test'
 #     environment:
 #       <<: *x-environment
-#     build:
-#       args:
-#         <<: *x-build-args
 # networks:
 #   pontsun:
 #     external:

@@ -16,9 +16,7 @@ services:
     ports:
       - 5432
   backend:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    build: .
     command: sh -c 'while true; do ./manage.py runserver 0.0.0.0:8000; sleep 1; done'
     environment:
       <<: *x-environment
