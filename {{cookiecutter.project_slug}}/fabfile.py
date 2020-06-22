@@ -337,25 +337,31 @@ def import_db(c, dump_file=None):
     if dump_file is None:
         dump_file = fetch_db(c)
 
-    db_info = {
-        "host": db_credentials_dict["HOST"],
-        "user": db_credentials_dict["USER"],
-        "db": db_credentials_dict["NAME"],
-        "db_dump": dump_file,
+    pg_opts_mapping = {
+        "-h": db_credentials_dict["HOST"],
+        "-U": db_credentials_dict["USER"],
     }
-    env = {"PGPASSWORD": db_credentials_dict["PASSWORD"].replace("$", "\$")}
+    pg_opts = " ".join(
+        [f"{option} '{value}'" for option, value in pg_opts_mapping.items() if value]
+    )
+    db_name = db_credentials_dict["NAME"]
+    db_info = {"pg_opts": pg_opts, "db": db_name}
+
+    env = {"PGPASSWORD": db_credentials_dict["PASSWORD"].replace("$", "\\$")}
     close_sessions_command = """
-        psql -h "{host}" -U "{user}" template1 -c "
+        psql {pg_opts} template1 -c "
             SELECT pg_terminate_backend(pg_stat_activity.pid)
             FROM pg_stat_activity
             WHERE pg_stat_activity.datname = '{db}' AND pid != pg_backend_pid();
         "
     """.strip()
     c.run(close_sessions_command.format(**db_info), env=env, hide="out")
-    c.run("dropdb -h '{host}' -U '{user}' '{db}'".format(**db_info), env=env)
-    c.run("createdb -h '{host}' -U '{user}' {db}".format(**db_info), env=env)
+    c.run("dropdb {pg_opts} '{db}'".format(**db_info), env=env)
+    c.run("createdb {pg_opts} '{db}'".format(**db_info), env=env)
     c.run(
-        "gunzip -c {db_dump}|psql -h '{host}' -U '{user}' '{db}'".format(**db_info),
+        "gunzip -c {db_dump}|psql {pg_opts} '{db}'".format(
+            db_dump=dump_file, **db_info
+        ),
         env=env,
         hide="out",
     )
