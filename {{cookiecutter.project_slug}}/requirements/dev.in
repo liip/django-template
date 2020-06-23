@@ -1,10 +1,8 @@
--r base.in
+-r test.in
 
 django-debug-toolbar
 django-extensions
-flake8-isort
 ipython
-ipdb
 pip-tools
 werkzeug
 
