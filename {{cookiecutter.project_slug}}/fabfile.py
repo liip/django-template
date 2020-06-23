@@ -422,13 +422,17 @@ def push_code_update(c, git_ref):
         port=c.conn.port,
         directory=c.conn.project_root,
     )
-
-    # Now push our code to the remote, always as FABHEAD branch
-    porcelain.push(".", git_remote_url, "{}:FABHEAD".format(git_ref))
-
+    # Delete the FABHEAD branch
     with c.conn.cd(c.conn.project_root):
+        try:
+            c.conn.git("branch -D FABHEAD", hide=True)
+        except UnexpectedExit:
+            pass
+        c.conn.git("checkout -f -B FABHEAD master", hide=True)
+
+        # Now push our code to the remote, always as FABHEAD branch
+        porcelain.push(".", git_remote_url, "{}:FABHEAD".format(git_ref), force=True)
         c.conn.git("checkout -f -B master FABHEAD", hide=True)
-        c.conn.git("branch -d FABHEAD", hide=True)
         c.conn.git("submodule update --init", hide=True)
 
 
