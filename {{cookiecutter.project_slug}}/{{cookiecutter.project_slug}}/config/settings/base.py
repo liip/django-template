@@ -2,7 +2,7 @@ import os
 
 import dj_database_url
 import dj_email_url
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 
 from . import get_env_variable
