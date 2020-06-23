@@ -511,7 +511,6 @@ def reload_uwsgi(c):
     )
 
 
-@task
 def compile_assets():
     subprocess.run(["npm", "install"])
     subprocess.run(["npm", "run", "build"])
