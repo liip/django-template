@@ -9,4 +9,4 @@ werkzeug
 # Deployment requirements
 fabric
 pip-tools
-dulwich
+dulwich<=0.20.3
