@@ -16,3 +16,4 @@ TEMPLATES[0]["OPTIONS"]["loaders"] = (  # noqa
 )
 
 LOGGING = {}
+STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
