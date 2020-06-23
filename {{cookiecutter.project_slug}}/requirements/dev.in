@@ -6,7 +6,6 @@ flake8-isort
 ipython
 ipdb
 pip-tools
-tox
 werkzeug
 
 # Deployment requirements
