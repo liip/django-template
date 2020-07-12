@@ -6,7 +6,7 @@ x-environment:
 
 services:
   db:
-    image: postgres:9.4
+    image: postgres:11.8
     environment:
       POSTGRES_HOST_AUTH_METHOD: trust
       POSTGRES_PASSWORD:
