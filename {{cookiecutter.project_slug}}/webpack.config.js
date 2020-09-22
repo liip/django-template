@@ -78,7 +78,9 @@ module.exports = {
       filename: '[name].css',
     }),
     new SpriteLoaderPlugin(),
-    new CleanWebpackPlugin(),
+    new CleanWebpackPlugin({
+        cleanOnceBeforeBuildPatterns: ['**/*', '!.gitkeep'],
+    }),
   ],
   devServer: {
     proxy: {
