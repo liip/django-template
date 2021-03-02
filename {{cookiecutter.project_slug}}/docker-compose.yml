@@ -24,6 +24,7 @@ services:
       ALLOWED_HOSTS: >-
         localhost
       DATABASE_URL: postgresql://postgres@db/{{ cookiecutter.project_slug }}
+      EMAIL_URL: smtp://mailhog:1025
     ports:
       - 8000
     volumes:
@@ -44,6 +45,10 @@ services:
       - 3000
     environment:
       <<: *x-environment
+  mailhog:
+    image: mailhog/mailhog:v1.0.1
+    ports:
+      - 8025
 volumes:
   pgdata:
   venv:

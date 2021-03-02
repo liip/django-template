@@ -11,6 +11,8 @@
 # Visit http://localhost:8000/ to access the Django dev server and
 # http://localhost:3000/ to access the Webpack dev server.
 #
+# Visit http://localhost:8025 to access the project's fake mail box.
+#
 # version: '3.4'
 # services:
 #   backend:
@@ -19,12 +21,17 @@
 #   frontend:
 #     ports:
 #       - 127.0.0.1:3000:3000
+#   mailhog:
+#     ports:
+#       - 127.0.0.1:8025:8025
 
 # PONTSUN CONFIGURATION
 # ~~~~~~~~~~~~~~~~~~~~~
 #
 # Set up pontsun (https://github.com/liip/pontsun) and start it. Then visit
 # https://{{ subdomain }}.docker.test/ to access the Webpack dev server.
+#
+# Visit https://{{ subdomain }}-mail.docker.test/ to access the project's fake mail box.
 #
 # version: '3.4'
 # x-environment:
@@ -59,6 +66,16 @@
 #     build:
 #       args:
 #         <<: *x-build-args
+#   mailhog:
+#     networks:
+#       - default
+#       - pontsun
+#     labels:
+#       - 'traefik.enable=true'
+#       - 'traefik.docker.network=pontsun'
+#       - 'traefik.backend={{ cookiecutter.project_slug }}_mail'
+#       - 'traefik.port=8025'
+#       - 'traefik.frontend.rule=Host:{{ subdomain }}-mail.docker.test'
 # networks:
 #   pontsun:
 #     external:
