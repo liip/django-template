@@ -15,6 +15,11 @@ urlpatterns = [
     {%- endif %}
 ]
 
+if 'rosetta' in settings.INSTALLED_APPS:
+    urlpatterns += [
+        path('rosetta/', include('rosetta.urls'))
+    ]
+
 if settings.DEBUG:
     import debug_toolbar
 

@@ -78,3 +78,10 @@ For example, running tests with `scripts/run_tests.sh {{ cookiecutter.project_sl
 re-creating the database from scratch on each run.
 
 {%- endif %}
+
+## Maintaining translations
+
+1. `make translations  # Regenerate .po files`
+2. Visit http://localhost:8000/rosetta/ and start translating!
+
+It's safe to run this locally, even if you use Docker. (The Docker image is missing the GNU gettext tools and the command will not work anyway.)

@@ -8,7 +8,11 @@ MIDDLEWARE += ("debug_toolbar.middleware.DebugToolbarMiddleware",)  # noqa
 SECRET_KEY = "notsosecret"
 INTERNAL_IPS = ("127.0.0.1",)
 
-INSTALLED_APPS += ("debug_toolbar", "django_extensions")  # noqa
+INSTALLED_APPS += (  # noqa
+    "debug_toolbar",
+    "django_extensions",
+    "rosetta"
+)
 
 TEMPLATES[0]["OPTIONS"]["loaders"] = (  # noqa
     "django.template.loaders.filesystem.Loader",
