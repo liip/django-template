@@ -552,10 +552,12 @@ def create_environment_task(name, env_conf):
         conf["environment"] = name
         # So now conf is the ENVIRONMENTS[env] dict plus "environment" pointing to the name
         # Push them in the context config dict
-        ctx.config.load_overrides(conf)
-        # Add the common_settings in there
-        ctx.conn = CustomConnection(host=conf["host"], inline_ssh_env=True)
-        ctx.conn.config.load_overrides(conf)
+        ctx.config.update(conf)
+        # Create a connection for this environment,
+        # sharing most of the configuration with the root context
+        ctx.conn = CustomConnection(
+            config=ctx.config.clone(), host=conf["host"], inline_ssh_env=True
+        )
 
     load_environment.__doc__ = (
         """Prepare connection and load config for %s environment""" % name
