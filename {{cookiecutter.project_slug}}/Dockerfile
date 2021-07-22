@@ -24,7 +24,7 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 RUN set -x; \
     groupadd -g $GROUP_ID app && \
     useradd --create-home -u $USER_ID -g app -s /bin/bash app && \
-    install -o app -g app -d /code "$VIRTUAL_ENV"
+    install -o app -g app -d /code "$VIRTUAL_ENV" /home/app/.ssh
 USER app
 RUN python -m venv "$VIRTUAL_ENV"
 WORKDIR /code

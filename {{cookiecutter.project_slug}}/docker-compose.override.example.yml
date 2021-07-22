@@ -25,7 +25,7 @@
 #     ports:
 #       - 127.0.0.1:8025:8025
 
-# PONTSUN CONFIGURATION
+# EXTENDED CONFIGURATION (pontsun, SSH access)
 # ~~~~~~~~~~~~~~~~~~~~~
 #
 # Set up pontsun (https://github.com/liip/pontsun) and start it. Then visit
@@ -48,6 +48,9 @@
 #       SSH_AUTH_SOCK: /ssh-agent
 #     volumes:
 #       - $SSH_AUTH_SOCK:/ssh-agent
+#       # SSH agent forwarding only works with Linux hosts
+#       # On Windows and macOS, you have to mount the private key directly:
+#       # - ~/.ssh/id_rsa:/home/app/.ssh/id_rsa
 #     build:
 #       args:
 #         <<: *x-build-args
