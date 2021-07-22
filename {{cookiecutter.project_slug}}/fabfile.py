@@ -1,4 +1,5 @@
 import functools
+import getpass
 import inspect
 import os
 import random
@@ -12,6 +13,7 @@ from fabric import task
 from fabric.connection import Connection
 from invoke import Exit
 from invoke.exceptions import UnexpectedExit
+from paramiko.ssh_exception import PasswordRequiredException
 
 ENVIRONMENTS = {
     "prod": {
@@ -62,8 +64,18 @@ def ensure_absolute_path(path):
 
 class CustomConnection(Connection):
     """
-    Add helpers function on Connection
+    Add helpers function on Connection.
+    Also automatically prompt for password on connection (when necessary).
     """
+
+    def open(self):
+        try:
+            super().open()
+        except PasswordRequiredException:
+            # Prompt for passphrase and try again
+            prompt = "Enter passphrase for unlocking SSH keys: "
+            self.connect_kwargs["passphrase"] = getpass.getpass(prompt)
+            super().open()
 
     @property
     def site_root(self):
