@@ -25,6 +25,7 @@ services:
         localhost
       DATABASE_URL: postgresql://postgres@db/{{ cookiecutter.project_slug }}
       EMAIL_URL: smtp://mailhog:1025
+      MEDIA_ROOT: /opt/media
     ports:
       - 8000
     volumes:

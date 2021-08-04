@@ -46,8 +46,10 @@
 #     environment:
 #       <<: *x-environment
 #       SSH_AUTH_SOCK: /ssh-agent
+#       MEDIA_ROOT: /opt/media  # If you want to use a custom media path
 #     volumes:
 #       - $SSH_AUTH_SOCK:/ssh-agent
+#       - media:/opt/media  # If you want to save media files in a volume
 #     build:
 #       args:
 #         <<: *x-build-args
@@ -80,3 +82,5 @@
 #   pontsun:
 #     external:
 #       name: pontsun
+# volumes:
+#   media:
