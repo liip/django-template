@@ -46,6 +46,8 @@
 #     environment:
 #       <<: *x-environment
 #       SSH_AUTH_SOCK: /ssh-agent
+#       JIRA_USERNAME: username
+#       JIRA_PASSWORD: password
 #     volumes:
 #       - $SSH_AUTH_SOCK:/ssh-agent
 #     build:
