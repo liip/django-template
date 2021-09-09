@@ -10,3 +10,4 @@ werkzeug
 fabric
 pip-tools
 dulwich<=0.20.3
+git+https://github.com/danickfort-liip/jira_release_helper.git@main

@@ -37,6 +37,7 @@ ENVIRONMENTS = {
 }
 
 project_name = "{{ cookiecutter.project_slug }}"
+jira_prefix = "{{ cookiecutter.jira_prefix }}"
 
 
 def remote(task_func):
@@ -372,6 +373,23 @@ def import_db(c, dump_file=None):
 
 @task
 @remote
+def comment_and_close_on_jira(c):
+    if c.config['environment'] == "prod":
+        command = "comment_and_close_issues_to_deploy"
+    else:
+        command = "comment_after_deploy"
+
+    with c.conn.cd(c.conn.project_root):
+        remote_version = c.conn.git("rev-parse HEAD", hide=True).stdout.strip()
+        new_version = subprocess.run("git rev-parse HEAD".split(" "), text=True, capture_output=True).stdout.strip()
+
+    subprocess.run(
+        f"jira_release {command} {jira_prefix} "
+        f"{c.config.environment} {remote_version} {new_version} {os.getcwd()}".split(" "))
+
+
+@task
+@remote
 def deploy(c):
     """
     Execute all deployment steps
@@ -385,6 +403,7 @@ def deploy(c):
     sync_assets(c)
     dj_collect_static(c)
     dj_migrate_database(c)
+    comment_and_close_on_jira(c)
     reload_uwsgi(c)
     c.conn.clean_old_database_backups(nb_backups_to_keep=10)
 
