@@ -291,6 +291,40 @@ def is_supported_db_engine(engine):
     ]
 
 
+def print_commits(commits):
+    for rev, message in commits:
+        print(f"{rev} {message}")
+
+
+def get_outgoing_commits(c):
+
+    with c.conn.cd(c.conn.project_root):
+        remote_tip = c.conn.git("rev-parse HEAD", hide=True, pty=False).stdout.strip()
+        commits = subprocess.run(f"git log --no-color --oneline {remote_tip}..".split(" "), text=True, capture_output=True).stdout.strip()
+        outgoing = to_commits_list(commits)
+
+    return outgoing
+
+
+@task
+def outgoing_commits(c):
+    print("The following commits are not on the remote branch:\n")
+    print_commits(get_outgoing_commits(c))
+
+
+@task
+@remote
+def log(c):
+    with c.conn.cd(c.conn.project_root):
+        commits = c.conn.git("log --no-color --oneline -n 20", hide=True, pty=False).stdout.strip()
+
+    print_commits(to_commits_list(commits))
+
+
+def to_commits_list(log_str):
+    return [tuple(log_line.split(maxsplit=1)) for log_line in log_str.splitlines()]
+
+
 @task
 @remote
 def fetch_db(c, destination="."):
