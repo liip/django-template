@@ -307,9 +307,20 @@ def get_outgoing_commits(c):
 
 
 @task
+@remote
 def outgoing_commits(c):
     print("The following commits are not on the remote branch:\n")
     print_commits(get_outgoing_commits(c))
+
+
+def get_local_modifications_count():
+    return len(
+        [
+            line
+            for line in subprocess.run("git status -s".split(" "), text=True, capture_output=True).stdout.splitlines()
+            if line.strip()
+        ]
+    )
 
 
 @task
@@ -406,10 +417,27 @@ def import_db(c, dump_file=None):
 
 @task
 @remote
-def deploy(c):
+def deploy(c, noconfirm='n'):
     """
     Execute all deployment steps
     """
+
+    # Prerequisite steps
+    noconfirmed = noconfirm.lower() in ("y", "yes")
+    outgoing_commits(c)
+    if not noconfirmed and input(
+        "Do you want to proceed with the deployment of the above commits ? [y/N] "
+    ).lower() not in ("y", "yes"):
+        return
+
+    local_modification_count = get_local_modifications_count()
+    if not noconfirmed and local_modification_count > 0:
+        if input(
+            f"Warning ! There are {local_modification_count} local files that are not commited. "
+            f"Do you want to proceed ? [y/N] "
+        ).lower() not in ("y", "yes"):
+            return
+
     compile_assets()
     c.conn.create_structure()
     push_code_update(c, "HEAD")
