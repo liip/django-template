@@ -384,7 +384,7 @@ def comment_and_close_on_jira(c):
         new_version = subprocess.run("git rev-parse HEAD".split(" "), text=True, capture_output=True).stdout.strip()
 
     subprocess.run(
-        f"jira_release {command }"
+        f"jira_release {command} "
         f"--jira-prefix={jira_prefix} "
         f"--environment={c.config.environment} "
         f"--remote-version={remote_version} "
