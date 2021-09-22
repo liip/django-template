@@ -417,21 +417,20 @@ def import_db(c, dump_file=None):
 
 @task
 @remote
-def deploy(c, noconfirm='n'):
+def deploy(c, noconfirm=False):
     """
     Execute all deployment steps
     """
 
     # Prerequisite steps
-    noconfirmed = noconfirm.lower() in ("y", "yes")
     outgoing_commits(c)
-    if not noconfirmed and input(
+    if not noconfirm and input(
         "Do you want to proceed with the deployment of the above commits ? [y/N] "
     ).lower() not in ("y", "yes"):
         return
 
     local_modification_count = get_local_modifications_count()
-    if not noconfirmed and local_modification_count > 0:
+    if not noconfirm and local_modification_count > 0:
         if input(
             f"Warning ! There are {local_modification_count} local files that are not commited. "
             f"Do you want to proceed ? [y/N] "
