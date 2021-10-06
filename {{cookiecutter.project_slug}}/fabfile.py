@@ -380,12 +380,28 @@ def comment_and_close_on_jira(c):
         command = "comment_after_deploy"
 
     with c.conn.cd(c.conn.project_root):
-        remote_version = c.conn.git("rev-parse HEAD", hide=True).stdout.strip()
+        remote_version = c.conn.git("rev-parse last_master", hide=True).stdout.strip()
         new_version = subprocess.run("git rev-parse HEAD".split(" "), text=True, capture_output=True).stdout.strip()
 
     subprocess.run(
         f"jira_release {command} {jira_prefix} "
         f"{c.config.environment} {remote_version} {new_version} {os.getcwd()}".split(" "))
+
+
+@remote
+def update_or_create_last_master(c):
+    with c.conn.cd(c.conn.project_root):
+        c.conn.git("branch -f last_master master", hide=True).stdout.strip()
+
+
+@remote
+def _init_last_master(c):
+    with c.conn.cd(c.conn.project_root):
+        last_master = c.conn.git(
+            "rev-parse --verify last_master", hide=True, warn=True
+        )
+        if last_master.exited:
+            update_or_create_last_master(c)
 
 
 @task
@@ -394,6 +410,7 @@ def deploy(c):
     """
     Execute all deployment steps
     """
+    _init_last_master(c)
     compile_assets()
     c.conn.create_structure()
     push_code_update(c, "HEAD")
@@ -406,6 +423,7 @@ def deploy(c):
     comment_and_close_on_jira(c)
     reload_uwsgi(c)
     c.conn.clean_old_database_backups(nb_backups_to_keep=10)
+    update_or_create_last_master(c)
 
 
 @task
