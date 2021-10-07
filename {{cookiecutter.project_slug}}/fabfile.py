@@ -291,6 +291,51 @@ def is_supported_db_engine(engine):
     ]
 
 
+def print_commits(commits):
+    for rev, message in commits:
+        print(f"{rev} {message}")
+
+
+def get_outgoing_commits(c):
+
+    with c.conn.cd(c.conn.project_root):
+        remote_tip = c.conn.git("rev-parse HEAD", hide=True, pty=False).stdout.strip()
+        commits = subprocess.run(f"git log --no-color --oneline {remote_tip}..".split(" "), text=True, capture_output=True).stdout.strip()
+        outgoing = to_commits_list(commits)
+
+    return outgoing
+
+
+@task
+@remote
+def outgoing_commits(c):
+    print("The following commits are not on the remote branch:\n")
+    print_commits(get_outgoing_commits(c))
+
+
+def get_local_modifications_count():
+    return len(
+        [
+            line
+            for line in subprocess.run("git status -s".split(" "), text=True, capture_output=True).stdout.splitlines()
+            if line.strip()
+        ]
+    )
+
+
+@task
+@remote
+def log(c):
+    with c.conn.cd(c.conn.project_root):
+        commits = c.conn.git("log --no-color --oneline -n 20", hide=True, pty=False).stdout.strip()
+
+    print_commits(to_commits_list(commits))
+
+
+def to_commits_list(log_str):
+    return [tuple(log_line.split(maxsplit=1)) for log_line in log_str.splitlines()]
+
+
 @task
 @remote
 def fetch_db(c, destination="."):
@@ -372,10 +417,26 @@ def import_db(c, dump_file=None):
 
 @task
 @remote
-def deploy(c):
+def deploy(c, noconfirm=False):
     """
     Execute all deployment steps
     """
+
+    # Prerequisite steps
+    outgoing_commits(c)
+    if not noconfirm and input(
+        "Do you want to proceed with the deployment of the above commits ? [y/N] "
+    ).lower() not in ("y", "yes"):
+        return
+
+    local_modification_count = get_local_modifications_count()
+    if not noconfirm and local_modification_count > 0:
+        if input(
+            f"Warning ! There are {local_modification_count} local files that are not commited. "
+            f"Do you want to proceed ? [y/N] "
+        ).lower() not in ("y", "yes"):
+            return
+
     compile_assets()
     c.conn.create_structure()
     push_code_update(c, "HEAD")
