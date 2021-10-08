@@ -1,4 +1,5 @@
 import functools
+import getpass
 import inspect
 import os
 import random
@@ -12,6 +13,7 @@ from fabric import task
 from fabric.connection import Connection
 from invoke import Exit
 from invoke.exceptions import UnexpectedExit
+from paramiko.ssh_exception import PasswordRequiredException
 
 ENVIRONMENTS = {
     "prod": {
@@ -63,8 +65,18 @@ def ensure_absolute_path(path):
 
 class CustomConnection(Connection):
     """
-    Add helpers function on Connection
+    Add helpers function on Connection.
+    Also automatically prompt for password on connection (when necessary).
     """
+
+    def open(self):
+        try:
+            super().open()
+        except PasswordRequiredException:
+            # Prompt for passphrase and try again
+            prompt = "Enter passphrase for unlocking SSH keys: "
+            self.connect_kwargs["passphrase"] = getpass.getpass(prompt)
+            super().open()
 
     @property
     def site_root(self):
@@ -654,10 +666,12 @@ def create_environment_task(name, env_conf):
         conf["environment"] = name
         # So now conf is the ENVIRONMENTS[env] dict plus "environment" pointing to the name
         # Push them in the context config dict
-        ctx.config.load_overrides(conf)
-        # Add the common_settings in there
-        ctx.conn = CustomConnection(host=conf["host"], inline_ssh_env=True)
-        ctx.conn.config.load_overrides(conf)
+        ctx.config.update(conf)
+        # Create a connection for this environment,
+        # sharing most of the configuration with the root context
+        ctx.conn = CustomConnection(
+            config=ctx.config.clone(), host=conf["host"], inline_ssh_env=True
+        )
 
     load_environment.__doc__ = (
         """Prepare connection and load config for %s environment""" % name
