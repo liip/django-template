@@ -485,9 +485,9 @@ def deploy(c, noconfirm=False):
     sync_assets(c)
     dj_collect_static(c)
     dj_migrate_database(c)
-    comment_and_close_on_jira(c)
     reload_uwsgi(c)
     c.conn.clean_old_database_backups(nb_backups_to_keep=10)
+    comment_and_close_on_jira(c)
     update_or_create_last_master(c)
 
 
