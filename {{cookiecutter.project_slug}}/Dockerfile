@@ -25,6 +25,10 @@ RUN set -x; \
     groupadd -g $GROUP_ID app && \
     useradd --create-home -u $USER_ID -g app -s /bin/bash app && \
     install -o app -g app -d /code "$VIRTUAL_ENV"
+
+RUN mkdir /opt/media
+RUN chown -R $USER_ID:$USER_ID /opt/media
+
 USER app
 RUN python -m venv "$VIRTUAL_ENV"
 WORKDIR /code

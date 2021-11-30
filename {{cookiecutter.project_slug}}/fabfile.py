@@ -336,6 +336,7 @@ def import_media(c):
     subprocess.run(
         [
             "rsync",
+            "--info=progress2",
             "-v",
             "-r",
             "--delete-before",
