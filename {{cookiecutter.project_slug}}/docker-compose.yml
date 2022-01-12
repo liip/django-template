@@ -25,9 +25,11 @@ services:
         localhost
       DATABASE_URL: postgresql://postgres@db/{{ cookiecutter.project_slug }}
       EMAIL_URL: smtp://mailhog:1025
+      MEDIA_ROOT: /opt/media
     ports:
       - 8000
     volumes:
+      - media:/opt/media
       - venv:/venv
       - .:/code
     depends_on:
@@ -50,5 +52,6 @@ services:
     ports:
       - 8025
 volumes:
+  media:
   pgdata:
   venv:

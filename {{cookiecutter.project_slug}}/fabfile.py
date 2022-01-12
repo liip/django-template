@@ -4,6 +4,7 @@ import os
 import random
 import subprocess
 from datetime import datetime
+from distutils.util import strtobool
 from io import StringIO
 
 import dj_database_url
@@ -365,12 +366,49 @@ def fetch_db(c, destination="."):
 
 
 @task
-def import_db(c, dump_file=None):
+@remote
+def import_media(c):
+    """
+    Rsync the distant media folder content, to the local media folder (identified by
+    the MEDIA_ROOT environment variable).
+    """
+    if "MEDIA_ROOT" not in os.environ:
+        raise RuntimeError(
+            "The local MEDIA_ROOT environment variable is not set."
+            "Is it correctly set in your docker configuration? "
+            "Unable to resolve the media root path, unable to import media files."
+        )
+
+    subprocess.run(
+        [
+            "rsync",
+            "--info=progress2",
+            "-v",
+            "-r",
+            "--delete-before",
+            "-e",
+            "ssh -p {port}".format(port=c.conn.port),
+            "{user}@{host}:{path}".format(
+                host=c.conn.host,
+                user=c.conn.user,
+                path=os.path.join(c.conn.site_root, "media/*"),
+            ),
+            os.environ['MEDIA_ROOT'],
+        ]
+    )
+
+
+@task
+def import_db(c, dump_file=None, with_media=False):
     """
     Restore the given database dump.
 
     The dump must be a gzipped SQL dump. If the dump_file parameter is not set,
     the database will be dumped and retrieved from the remote host.
+
+    :param c: The connection wrapper to the server
+    :param dump_file: When provided, import the dump instead of dumping and fetching.
+    :param with_media: If `--with-media` argument is provided, import the media content as well.
     """
     db_credentials = os.environ.get("DATABASE_URL")
     if not db_credentials:
@@ -414,6 +452,9 @@ def import_db(c, dump_file=None):
         env=env,
         hide="out",
     )
+
+    if with_media:
+        import_media(c)
 
 
 @task

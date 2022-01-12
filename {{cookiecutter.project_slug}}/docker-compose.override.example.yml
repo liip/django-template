@@ -51,6 +51,7 @@
 #       JIRA_URL: https://jira.liip.ch
 #     volumes:
 #       - $SSH_AUTH_SOCK:/ssh-agent
+#       - media:/opt/media  # If you want to save media files in a volume
 #     build:
 #       args:
 #         <<: *x-build-args
@@ -83,3 +84,5 @@
 #   pontsun:
 #     external:
 #       name: pontsun
+# volumes:
+#   media:
