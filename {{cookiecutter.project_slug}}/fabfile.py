@@ -147,6 +147,7 @@ class CustomConnection(Connection):
 
         with self.cd(self.site_root):
             self.run("python3 -m venv venv", **run_kwargs)
+        self.pip("install wheel")
 
     def pip(self, args, **run_kwargs):
         """
