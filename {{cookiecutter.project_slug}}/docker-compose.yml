@@ -1,4 +1,4 @@
-version: '3.4'
+version: '3.8'
 
 x-environment:
   &x-environment
@@ -19,6 +19,7 @@ services:
     build:
       context: .
     command: sh -c 'while true; do ./manage.py runserver 0.0.0.0:8000; sleep 1; done'
+    init: true
     environment:
       <<: *x-environment
       ALLOWED_HOSTS: >-
@@ -41,6 +42,7 @@ services:
       context: .
       dockerfile: Dockerfile-frontend
     command: npm start
+    init: true
     volumes:
       - .:/code
     ports:
