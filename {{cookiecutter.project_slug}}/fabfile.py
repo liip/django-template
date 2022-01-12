@@ -407,7 +407,7 @@ def import_db(c, dump_file=None, with_media=False):
         hide="out",
     )
 
-    if bool(strtobool(str(with_media))):
+    if with_media:
         import_media(c)
 
 

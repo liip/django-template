@@ -29,6 +29,7 @@ services:
     ports:
       - 8000
     volumes:
+      - media:/opt/media
       - venv:/venv
       - .:/code
     depends_on:
@@ -51,5 +52,6 @@ services:
     ports:
       - 8025
 volumes:
+  media:
   pgdata:
   venv:
