@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 from io import StringIO
 
 from django.core import management
@@ -36,8 +37,13 @@ class Command(BaseCommand):
             help="Don't ask for confirmation.",
         )
 
-    def handle(self, *args, **options):
-        self.stdout.write("Resetting the database... ", ending="")
+    @contextmanager
+    def print_step(self, message):
+        self.stdout.write(message, ending=" ")
         self.stdout.flush()
-        reset_db()
+        yield
         self.stdout.write(self.style.SUCCESS("OK"))
+
+    def handle(self, *args, **options):
+        with self.print_step("Resetting the database..."):
+            reset_db()
