@@ -38,6 +38,7 @@ ENVIRONMENTS = {
     },
 }
 
+local_project_root = os.path.dirname(__file__)
 project_name = "{{ cookiecutter.project_slug }}"
 jira_prefix = "{{ cookiecutter.jira_prefix }}"
 
@@ -310,7 +311,12 @@ def get_outgoing_commits(c):
 
     with c.conn.cd(c.conn.project_root):
         remote_tip = c.conn.git("rev-parse HEAD", hide=True, pty=False).stdout.strip()
-        commits = subprocess.run(f"git log --no-color --oneline {remote_tip}..".split(" "), text=True, capture_output=True).stdout.strip()
+        commits = subprocess.run(
+            f"git log --no-color --oneline {remote_tip}..".split(" "),
+            text=True,
+            capture_output=True,
+            cwd=local_project_root,
+        ).stdout.strip()
         outgoing = to_commits_list(commits)
 
     return outgoing
@@ -428,7 +434,7 @@ def import_db(c, dump_file=None, with_media=False):
         )
 
     if dump_file is None:
-        dump_file = fetch_db(c)
+        dump_file = fetch_db(c, local_project_root)
 
     pg_opts_mapping = {
         "-h": db_credentials_dict["HOST"],
@@ -473,7 +479,12 @@ def comment_and_close_on_jira(c):
 
     with c.conn.cd(c.conn.project_root):
         remote_version = c.conn.git("rev-parse last_master", hide=True).stdout.strip()
-        new_version = subprocess.run("git rev-parse HEAD".split(" "), text=True, capture_output=True).stdout.strip()
+        new_version = subprocess.run(
+            "git rev-parse HEAD".split(" "),
+            text=True,
+            capture_output=True,
+            cwd=local_project_root,
+        ).stdout.strip()
 
     subprocess.run(
         f"jira_release {command} "
@@ -481,7 +492,7 @@ def comment_and_close_on_jira(c):
         f"--environment={c.config.environment} "
         f"--remote-version={remote_version} "
         f"--to-deploy-version={new_version} "
-        f"--git-path={os.getcwd()}".split(" "))
+        f"--git-path={local_project_root}".split(" "))
 
 
 @remote
@@ -573,7 +584,7 @@ def push_code_update(c, git_ref):
     )
 
     # Now push our code to the remote, always as FABHEAD branch
-    porcelain.push(".", git_remote_url, "{}:FABHEAD".format(git_ref))
+    porcelain.push(local_project_root, git_remote_url, "{}:FABHEAD".format(git_ref))
 
     with c.conn.cd(c.conn.project_root):
         c.conn.git("checkout -f -B master FABHEAD", hide=True)
@@ -661,8 +672,8 @@ def reload_uwsgi(c):
 
 
 def compile_assets():
-    subprocess.run(["npm", "install"])
-    subprocess.run(["npm", "run", "build"])
+    subprocess.run(["npm", "install"], cwd=local_project_root)
+    subprocess.run(["npm", "run", "build"], cwd=local_project_root)
 
 
 @task
@@ -678,7 +689,7 @@ def sync_assets(c):
             "*.map",
             "--exclude",
             "*.swp",
-            "static/dist",
+            os.path.join(local_project_root, "static/dist"),
             "{user}@{host}:{path}".format(
                 host=c.conn.host,
                 user=c.conn.user,
