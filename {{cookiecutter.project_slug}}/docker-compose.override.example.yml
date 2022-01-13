@@ -38,6 +38,11 @@
 #   &x-environment
 #   ALLOWED_HOSTS: >-
 #     {{ subdomain }}.docker.test
+#   # These Jira variables allow the use of the "jira_release_helper" tool, which posts comments, closes stories
+#   # automatically on deployment.
+#   JIRA_USERNAME: username
+#   JIRA_PASSWORD: password
+#   JIRA_URL: https://jira.liip.ch
 # x-build-args: &x-build-args
 #  # USER_ID: 1001  # Set if your dev user  is non-1000
 #  # GROUP_ID: 1001 # Set if your dev group is non-1000
