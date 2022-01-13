@@ -27,6 +27,13 @@ translations: ## Regenerate .po files with ./manage.py makemessages
 compile-translations: ## Compile .po files with ./manage.py compilemessages
 	./manage.py compilemessages
 
+format:  # Fix some linting issues in the project
+	black {{ cookiecutter.project_slug }} fabfile.py
+	isort {{ cookiecutter.project_slug }} fabfile.py
+
+lint:  # Show linting issues in the project
+	flake8 {{ cookiecutter.project_slug }} fabfile.py
+
 .PHONY: help
 help: ## Display this help
 	@grep -E '^[.a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort -k 1,1 | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'

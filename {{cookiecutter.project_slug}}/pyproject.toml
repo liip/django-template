@@ -1,0 +1,11 @@
+[tool.black]
+target-version = ['py39']
+include = '\.pyi?$'
+exclude = '''
+(
+      /\..*
+    | /node_modules/
+    | /migrations/
+    | /static/
+)
+'''
