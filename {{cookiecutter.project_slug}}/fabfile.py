@@ -4,7 +4,6 @@ import os
 import random
 import subprocess
 from datetime import datetime
-from distutils.util import strtobool
 from io import StringIO
 
 import dj_database_url
@@ -302,7 +301,11 @@ def get_outgoing_commits(c):
 
     with c.conn.cd(c.conn.project_root):
         remote_tip = c.conn.git("rev-parse HEAD", hide=True, pty=False).stdout.strip()
-        commits = subprocess.run(f"git log --no-color --oneline {remote_tip}..".split(" "), text=True, capture_output=True).stdout.strip()
+        commits = subprocess.run(
+            f"git log --no-color --oneline {remote_tip}..".split(" "),
+            text=True,
+            capture_output=True,
+        ).stdout.strip()
         outgoing = to_commits_list(commits)
 
     return outgoing
@@ -319,7 +322,9 @@ def get_local_modifications_count():
     return len(
         [
             line
-            for line in subprocess.run("git status -s".split(" "), text=True, capture_output=True).stdout.splitlines()
+            for line in subprocess.run(
+                "git status -s".split(" "), text=True, capture_output=True
+            ).stdout.splitlines()
             if line.strip()
         ]
     )
@@ -329,7 +334,9 @@ def get_local_modifications_count():
 @remote
 def log(c):
     with c.conn.cd(c.conn.project_root):
-        commits = c.conn.git("log --no-color --oneline -n 20", hide=True, pty=False).stdout.strip()
+        commits = c.conn.git(
+            "log --no-color --oneline -n 20", hide=True, pty=False
+        ).stdout.strip()
 
     print_commits(to_commits_list(commits))
 
@@ -393,7 +400,7 @@ def import_media(c):
                 user=c.conn.user,
                 path=os.path.join(c.conn.site_root, "media/*"),
             ),
-            os.environ['MEDIA_ROOT'],
+            os.environ["MEDIA_ROOT"],
         ]
     )
 
@@ -460,14 +467,16 @@ def import_db(c, dump_file=None, with_media=False):
 @task
 @remote
 def comment_and_close_on_jira(c):
-    if c.config['environment'] == "prod":
+    if c.config["environment"] == "prod":
         command = "comment_and_close_issues_to_deploy"
     else:
         command = "comment_after_deploy"
 
     with c.conn.cd(c.conn.project_root):
         remote_version = c.conn.git("rev-parse last_master", hide=True).stdout.strip()
-        new_version = subprocess.run("git rev-parse HEAD".split(" "), text=True, capture_output=True).stdout.strip()
+        new_version = subprocess.run(
+            "git rev-parse HEAD".split(" "), text=True, capture_output=True
+        ).stdout.strip()
 
     subprocess.run(
         f"jira_release {command} "
@@ -475,7 +484,8 @@ def comment_and_close_on_jira(c):
         f"--environment={c.config.environment} "
         f"--remote-version={remote_version} "
         f"--to-deploy-version={new_version} "
-        f"--git-path={os.getcwd()}".split(" "))
+        f"--git-path={os.getcwd()}".split(" ")
+    )
 
 
 @remote
@@ -487,9 +497,7 @@ def update_or_create_last_master(c):
 @remote
 def _init_last_master(c):
     with c.conn.cd(c.conn.project_root):
-        last_master = c.conn.git(
-            "rev-parse --verify last_master", hide=True, warn=True
-        )
+        last_master = c.conn.git("rev-parse --verify last_master", hide=True, warn=True)
         if last_master.exited:
             update_or_create_last_master(c)
 
@@ -676,7 +684,7 @@ def sync_assets(c):
             "{user}@{host}:{path}".format(
                 host=c.conn.host,
                 user=c.conn.user,
-                path=os.path.join(c.conn.project_root, 'static'),
+                path=os.path.join(c.conn.project_root, "static"),
             ),
         ]
     )

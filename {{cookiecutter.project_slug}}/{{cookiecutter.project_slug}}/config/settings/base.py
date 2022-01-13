@@ -1,12 +1,12 @@
 import os
 
-import dj_database_url
-import dj_email_url
 from django.utils.translation import gettext_lazy as _
 
+import dj_database_url
+import dj_email_url
 
-from . import get_env_variable
 from .. import get_project_root_path
+from . import get_env_variable
 
 gettext = lambda s: s
 
@@ -147,7 +147,7 @@ TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "DIRS": [
-            os.path.join(BASE_DIR, "{{ cookiecutter.project_slug }}", "templates")
+            os.path.join(BASE_DIR, "{{ cookiecutter.project_slug }}", "templates"),
         ],
         "OPTIONS": {
             "context_processors": [
