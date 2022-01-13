@@ -7,6 +7,7 @@ RUN set -x; \
     && curl -sSL https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add - \
     && apt-get update -qq \
     && apt-get install -yq \
+        gettext \
         # Needed to build and deploy frontend assets from fabfile
         nodejs rsync \
         # Not required. Only for development QoL.
