@@ -1,9 +1,9 @@
-FROM python:3.7-buster
+FROM python:3.9-bullseye
 
 # Needed to build assets in the deployment process
 RUN set -x; \
     export DEBIAN_FRONTEND=noninteractive \
-    && echo "deb https://deb.nodesource.com/node_10.x buster main" > /etc/apt/sources.list.d/nodesource.list \
+    && echo "deb https://deb.nodesource.com/node_16.x bullseye main" > /etc/apt/sources.list.d/nodesource.list \
     && curl -sSL https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add - \
     && apt-get update -qq \
     && apt-get install -yq \

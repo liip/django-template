@@ -13,7 +13,7 @@
 #
 # Visit http://localhost:8025 to access the project's fake mail box.
 #
-# version: '3.4'
+# version: '3.8'
 # services:
 #   backend:
 #     ports:
@@ -33,7 +33,7 @@
 #
 # Visit https://{{ subdomain }}-mail.docker.test/ to access the project's fake mail box.
 #
-# version: '3.4'
+# version: '3.8'
 # x-environment:
 #   &x-environment
 #   ALLOWED_HOSTS: >-
@@ -82,7 +82,6 @@
 #       - 'traefik.frontend.rule=Host:{{ subdomain }}-mail.docker.test'
 # networks:
 #   pontsun:
-#     external:
-#       name: pontsun
+#     external: true
 # volumes:
 #   media:
