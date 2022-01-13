@@ -400,7 +400,7 @@ def import_media(c):
             "{user}@{host}:{path}".format(
                 host=c.conn.host,
                 user=c.conn.user,
-                path=os.path.join(c.conn.site_root, "media/*"),
+                path=os.path.join(c.conn.media_root, "*"),
             ),
             local_media_root,
         ]
@@ -682,7 +682,7 @@ def sync_assets(c):
             "{user}@{host}:{path}".format(
                 host=c.conn.host,
                 user=c.conn.user,
-                path=os.path.join(c.conn.project_root, 'static'),
+                path=c.conn.static_root,
             ),
         ]
     )
