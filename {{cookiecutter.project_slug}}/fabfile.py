@@ -6,6 +6,7 @@ import subprocess
 from datetime import datetime
 from distutils.util import strtobool
 from io import StringIO
+from pathlib import Path
 
 import dj_database_url
 from dulwich import porcelain
@@ -39,6 +40,13 @@ ENVIRONMENTS = {
 
 project_name = "{{ cookiecutter.project_slug }}"
 jira_prefix = "{{ cookiecutter.jira_prefix }}"
+
+
+def get_local_env_variable(var_name):
+    try:
+        return os.environ[var_name]
+    except KeyError:
+        return Path("envdir").joinpath(var_name).read_text()
 
 
 def remote(task_func):
@@ -372,9 +380,10 @@ def import_media(c):
     Rsync the distant media folder content, to the local media folder (identified by
     the MEDIA_ROOT environment variable).
     """
-    if "MEDIA_ROOT" not in os.environ:
+    local_media_root = get_local_env_variable("MEDIA_ROOT")
+    if not local_media_root:
         raise RuntimeError(
-            "The local MEDIA_ROOT environment variable is not set."
+            "The local MEDIA_ROOT environment variable is empty or not set."
             "Is it correctly set in your docker configuration? "
             "Unable to resolve the media root path, unable to import media files."
         )
@@ -393,7 +402,7 @@ def import_media(c):
                 user=c.conn.user,
                 path=os.path.join(c.conn.site_root, "media/*"),
             ),
-            os.environ['MEDIA_ROOT'],
+            local_media_root,
         ]
     )
 
@@ -410,10 +419,7 @@ def import_db(c, dump_file=None, with_media=False):
     :param dump_file: When provided, import the dump instead of dumping and fetching.
     :param with_media: If `--with-media` argument is provided, import the media content as well.
     """
-    db_credentials = os.environ.get("DATABASE_URL")
-    if not db_credentials:
-        with open("envdir/DATABASE_URL", "r") as db_credentials_file:
-            db_credentials = db_credentials_file.read()
+    db_credentials = get_local_env_variable("DATABASE_URL")
     db_credentials_dict = dj_database_url.parse(db_credentials)
 
     if not is_supported_db_engine(db_credentials_dict["ENGINE"]):
