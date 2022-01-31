@@ -1,5 +1,6 @@
 -r base.in
 
+black
 factory_boy
 flake8
 flake8-black

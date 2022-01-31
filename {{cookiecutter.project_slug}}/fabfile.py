@@ -364,7 +364,9 @@ def get_local_modifications_count():
     return len(
         [
             line
-            for line in subprocess.run("git status -s".split(" "), text=True, capture_output=True).stdout.splitlines()
+            for line in subprocess.run(
+                "git status -s".split(" "), text=True, capture_output=True
+            ).stdout.splitlines()
             if line.strip()
         ]
     )
@@ -374,7 +376,9 @@ def get_local_modifications_count():
 @remote
 def log(c):
     with c.conn.cd(c.conn.project_root):
-        commits = c.conn.git("log --no-color --oneline -n 20", hide=True, pty=False).stdout.strip()
+        commits = c.conn.git(
+            "log --no-color --oneline -n 20", hide=True, pty=False
+        ).stdout.strip()
 
     print_commits(to_commits_list(commits))
 
@@ -496,7 +500,7 @@ def import_db(c, dump_file=None, with_media=False):
 @task
 @remote
 def comment_and_close_on_jira(c):
-    if c.config['environment'] == "prod":
+    if c.config["environment"] == "prod":
         command = "comment_and_close_issues_to_deploy"
     else:
         command = "comment_after_deploy"
@@ -516,7 +520,8 @@ def comment_and_close_on_jira(c):
         f"--environment={c.config.environment} "
         f"--remote-version={remote_version} "
         f"--to-deploy-version={new_version} "
-        f"--git-path={local_project_root}".split(" "))
+        f"--git-path={local_project_root}".split(" ")
+    )
 
 
 @remote
@@ -528,9 +533,7 @@ def update_or_create_last_master(c):
 @remote
 def _init_last_master(c):
     with c.conn.cd(c.conn.project_root):
-        last_master = c.conn.git(
-            "rev-parse --verify last_master", hide=True, warn=True
-        )
+        last_master = c.conn.git("rev-parse --verify last_master", hide=True, warn=True)
         if last_master.exited:
             update_or_create_last_master(c)
 
