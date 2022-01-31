@@ -4,7 +4,6 @@ import os
 import random
 import subprocess
 from datetime import datetime
-from distutils.util import strtobool
 from io import StringIO
 from pathlib import Path
 
@@ -43,11 +42,28 @@ project_name = "{{ cookiecutter.project_slug }}"
 jira_prefix = "{{ cookiecutter.jira_prefix }}"
 
 
-def get_local_env_variable(var_name):
+class MissingEnvVariable(Exception):
+    pass
+
+
+def get_local_env_variable(var_name, allow_empty=False):
     try:
-        return os.environ[var_name]
+        env_value = os.environ[var_name]
     except KeyError:
-        return Path("envdir").joinpath(var_name).read_text()
+        env_path = Path("envdir").joinpath(var_name)
+        if not env_path.is_file():
+            raise MissingEnvVariable(
+                f"The local {var_name} environment variable is not set. "
+                "Is it correctly set in your docker configuration? "
+            )
+        env_value = env_path.read_text()
+
+    if not allow_empty and not env_value.strip():
+        raise MissingEnvVariable(
+            f"The local {var_name} environment variable is empty. "
+            "Is it correctly set in your docker configuration? "
+        )
+    return env_value
 
 
 def remote(task_func):
@@ -387,13 +403,6 @@ def import_media(c):
     the MEDIA_ROOT environment variable).
     """
     local_media_root = get_local_env_variable("MEDIA_ROOT")
-    if not local_media_root:
-        raise RuntimeError(
-            "The local MEDIA_ROOT environment variable is empty or not set."
-            "Is it correctly set in your docker configuration? "
-            "Unable to resolve the media root path, unable to import media files."
-        )
-
     subprocess.run(
         [
             "rsync",
