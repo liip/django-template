@@ -4,6 +4,7 @@
 if [ ! -e "$VIRTUAL_ENV/bin" ]; then
     echo "Creating virtualenv at \"$VIRTUAL_ENV\""
     python -m venv "$VIRTUAL_ENV"
+    pip install wheel
 fi
 
 if [ "$INITIAL" = "1" ]; then

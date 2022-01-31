@@ -31,7 +31,7 @@ RUN mkdir /opt/media
 RUN chown -R $USER_ID:$USER_ID /opt/media
 
 USER app
-RUN python -m venv "$VIRTUAL_ENV"
+RUN python -m venv "$VIRTUAL_ENV" && "$VIRTUAL_ENV/bin/pip" install wheel
 WORKDIR /code
 
 COPY entrypoint.sh /

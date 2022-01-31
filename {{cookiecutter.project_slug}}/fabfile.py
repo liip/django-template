@@ -172,6 +172,7 @@ class CustomConnection(Connection):
 
         with self.cd(self.site_root):
             self.run("python3 -m venv venv", **run_kwargs)
+        self.pip("install wheel")
 
     def pip(self, args, **run_kwargs):
         """
@@ -266,6 +267,20 @@ class CustomConnection(Connection):
             ]
         )
         self.run(command)
+
+        # Initialize empty git repository for project
+        with self.cd(self.project_root):
+            try:
+                self.git("--version", hide=True)
+            except UnexpectedExit:
+                raise Exit("Provisioning not finished, git not available!")
+
+            try:
+                self.git("rev-parse --git-dir", hide=True)
+            except UnexpectedExit:
+                self.git("init")
+                self.git("commit --allow-empty -m empty-commit")
+                self.git("branch -f last_master master")
 
     def clean_old_database_backups(self, nb_backups_to_keep):
         """
@@ -528,6 +543,8 @@ def deploy(c, noconfirm=False):
     """
 
     # Prerequisite steps
+    c.conn.create_structure()
+
     outgoing_commits(c)
     if not noconfirm and input(
         "Do you want to proceed with the deployment of the above commits ? [y/N] "
@@ -544,7 +561,6 @@ def deploy(c, noconfirm=False):
 
     _init_last_master(c)
     compile_assets()
-    c.conn.create_structure()
     push_code_update(c, "HEAD")
     sync_settings(c)
     c.conn.dump_db(c.conn.backups_root)
@@ -564,27 +580,6 @@ def push_code_update(c, git_ref):
     """
     Synchronize the remote code repository
     """
-    with c.conn.cd(c.conn.project_root):
-        # First, check that the remote deployment directory exists
-        try:
-            c.conn.run("test -d .", hide=True)
-        except UnexpectedExit:
-            raise Exit(
-                "Provisioning not finished, directory {} doesn't exist!".format(
-                    c.config["root"]
-                )
-            )
-        # Now make sure there's git, and a git repository
-        try:
-            c.conn.git("--version", hide=True)
-        except UnexpectedExit:
-            raise Exit("Provisioning not finished, git not available!")
-
-        try:
-            c.conn.git("rev-parse --git-dir", hide=True)
-        except UnexpectedExit:
-            c.conn.git("init")
-
     git_remote_url = "ssh://{user}@{host}:{port}/{directory}".format(
         user=c.conn.user,
         host=c.conn.host,
