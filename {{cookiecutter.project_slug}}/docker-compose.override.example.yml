@@ -36,7 +36,7 @@
 # version: '3.8'
 # x-environment:
 #   &x-environment
-#   ALLOWED_HOSTS: >-
+#   ALLOWED_HOSTS: |-
 #     {{ subdomain }}.docker.test
 #   # These Jira variables allow the use of the "jira_release_helper" tool, which posts comments, closes stories
 #   # automatically on deployment.

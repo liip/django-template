@@ -2,7 +2,11 @@ from . import get_env_variable
 from .base import *  # noqa
 
 DEBUG = bool(get_env_variable("DEBUG", True))
-DEBUG_TOOLBAR_CONFIG = {"INTERCEPT_REDIRECTS": False}
+DEBUG_TOOLBAR_CONFIG = {
+    "INTERCEPT_REDIRECTS": False,
+    "SHOW_COLLAPSED": True,
+    "SHOW_TOOLBAR_CALLBACK": lambda request: True,
+}
 MIDDLEWARE += ("debug_toolbar.middleware.DebugToolbarMiddleware",)  # noqa
 
 SECRET_KEY = "notsosecret"

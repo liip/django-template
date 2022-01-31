@@ -4,8 +4,8 @@ import os
 import random
 import subprocess
 from datetime import datetime
-from distutils.util import strtobool
 from io import StringIO
+from pathlib import Path
 
 import dj_database_url
 from dulwich import porcelain
@@ -37,8 +37,33 @@ ENVIRONMENTS = {
     },
 }
 
+local_project_root = os.path.dirname(__file__)
 project_name = "{{ cookiecutter.project_slug }}"
 jira_prefix = "{{ cookiecutter.jira_prefix }}"
+
+
+class MissingEnvVariable(Exception):
+    pass
+
+
+def get_local_env_variable(var_name, allow_empty=False):
+    try:
+        env_value = os.environ[var_name]
+    except KeyError:
+        env_path = Path("envdir").joinpath(var_name)
+        if not env_path.is_file():
+            raise MissingEnvVariable(
+                f"The local {var_name} environment variable is not set. "
+                "Is it correctly set in your docker configuration? "
+            )
+        env_value = env_path.read_text()
+
+    if not allow_empty and not env_value.strip():
+        raise MissingEnvVariable(
+            f"The local {var_name} environment variable is empty. "
+            "Is it correctly set in your docker configuration? "
+        )
+    return env_value
 
 
 def remote(task_func):
@@ -302,7 +327,12 @@ def get_outgoing_commits(c):
 
     with c.conn.cd(c.conn.project_root):
         remote_tip = c.conn.git("rev-parse HEAD", hide=True, pty=False).stdout.strip()
-        commits = subprocess.run(f"git log --no-color --oneline {remote_tip}..".split(" "), text=True, capture_output=True).stdout.strip()
+        commits = subprocess.run(
+            f"git log --no-color --oneline {remote_tip}..".split(" "),
+            text=True,
+            capture_output=True,
+            cwd=local_project_root,
+        ).stdout.strip()
         outgoing = to_commits_list(commits)
 
     return outgoing
@@ -372,13 +402,7 @@ def import_media(c):
     Rsync the distant media folder content, to the local media folder (identified by
     the MEDIA_ROOT environment variable).
     """
-    if "MEDIA_ROOT" not in os.environ:
-        raise RuntimeError(
-            "The local MEDIA_ROOT environment variable is not set."
-            "Is it correctly set in your docker configuration? "
-            "Unable to resolve the media root path, unable to import media files."
-        )
-
+    local_media_root = get_local_env_variable("MEDIA_ROOT")
     subprocess.run(
         [
             "rsync",
@@ -391,9 +415,9 @@ def import_media(c):
             "{user}@{host}:{path}".format(
                 host=c.conn.host,
                 user=c.conn.user,
-                path=os.path.join(c.conn.site_root, "media/*"),
+                path=os.path.join(c.conn.media_root, "*"),
             ),
-            os.environ['MEDIA_ROOT'],
+            local_media_root,
         ]
     )
 
@@ -410,10 +434,7 @@ def import_db(c, dump_file=None, with_media=False):
     :param dump_file: When provided, import the dump instead of dumping and fetching.
     :param with_media: If `--with-media` argument is provided, import the media content as well.
     """
-    db_credentials = os.environ.get("DATABASE_URL")
-    if not db_credentials:
-        with open("envdir/DATABASE_URL", "r") as db_credentials_file:
-            db_credentials = db_credentials_file.read()
+    db_credentials = get_local_env_variable("DATABASE_URL")
     db_credentials_dict = dj_database_url.parse(db_credentials)
 
     if not is_supported_db_engine(db_credentials_dict["ENGINE"]):
@@ -422,7 +443,7 @@ def import_db(c, dump_file=None, with_media=False):
         )
 
     if dump_file is None:
-        dump_file = fetch_db(c)
+        dump_file = fetch_db(c, local_project_root)
 
     pg_opts_mapping = {
         "-h": db_credentials_dict["HOST"],
@@ -467,7 +488,12 @@ def comment_and_close_on_jira(c):
 
     with c.conn.cd(c.conn.project_root):
         remote_version = c.conn.git("rev-parse last_master", hide=True).stdout.strip()
-        new_version = subprocess.run("git rev-parse HEAD".split(" "), text=True, capture_output=True).stdout.strip()
+        new_version = subprocess.run(
+            "git rev-parse HEAD".split(" "),
+            text=True,
+            capture_output=True,
+            cwd=local_project_root,
+        ).stdout.strip()
 
     subprocess.run(
         f"jira_release {command} "
@@ -475,7 +501,7 @@ def comment_and_close_on_jira(c):
         f"--environment={c.config.environment} "
         f"--remote-version={remote_version} "
         f"--to-deploy-version={new_version} "
-        f"--git-path={os.getcwd()}".split(" "))
+        f"--git-path={local_project_root}".split(" "))
 
 
 @remote
@@ -567,7 +593,7 @@ def push_code_update(c, git_ref):
     )
 
     # Now push our code to the remote, always as FABHEAD branch
-    porcelain.push(".", git_remote_url, "{}:FABHEAD".format(git_ref))
+    porcelain.push(local_project_root, git_remote_url, "{}:FABHEAD".format(git_ref))
 
     with c.conn.cd(c.conn.project_root):
         c.conn.git("checkout -f -B master FABHEAD", hide=True)
@@ -655,8 +681,8 @@ def reload_uwsgi(c):
 
 
 def compile_assets():
-    subprocess.run(["npm", "install"])
-    subprocess.run(["npm", "run", "build"])
+    subprocess.run(["npm", "install"], cwd=local_project_root)
+    subprocess.run(["npm", "run", "build"], cwd=local_project_root)
 
 
 @task
@@ -672,11 +698,11 @@ def sync_assets(c):
             "*.map",
             "--exclude",
             "*.swp",
-            "static/dist",
+            os.path.join(local_project_root, "static/dist"),
             "{user}@{host}:{path}".format(
                 host=c.conn.host,
                 user=c.conn.user,
-                path=os.path.join(c.conn.project_root, 'static'),
+                path=c.conn.static_root,
             ),
         ]
     )
