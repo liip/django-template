@@ -2,6 +2,7 @@ dj-database-url
 Django
 psycopg2-binary
 dj_email_url
+argon2-cffi
 {%- if cookiecutter.use_djangocms == 'y' %}
 
 django-cms
