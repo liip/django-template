@@ -78,3 +78,31 @@ For example, running tests with `scripts/run_tests.sh {{ cookiecutter.project_sl
 re-creating the database from scratch on each run.
 
 {%- endif %}
+
+## Deploying
+
+
+Before deploying, you should update the CHANGELOG.md file with the latest changes by running:
+ ```
+ docker-compose exec backend fab <environment> generate_changelog
+```
+
+**Note**: this step is not strictly required, but be aware that the CHANGELOG.md file should reflect the current status
+of the project. For example, you might not want to update the changelog if you are pushing an urgent hotfix/doing tests.
+
+
+To deploy the site, run:
+ ```
+ docker-compose exec backend fab <environment> deploy
+```
+
+Where _<environment>_ can either be _prod_ or _staging_. To see all the available Fabric commands, run:
+
+```
+ docker-compose exec backend fab -l
+```
+
+If the deployment command asks you for a password, make sure you have _ssh-agent_ running on your host and your SSH key
+has been added to it (using `ssh-add`) and that it has been forwarded to the box when you SSHed into it.
+
+Make sure `fab <environment> bootstrap` has already been run before the first ever deployment.

@@ -206,6 +206,7 @@ INSTALLED_APPS = (
     "easy_thumbnails",
     "django.contrib.sites",
     {% endif -%}
+    "changelogmd",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
@@ -273,3 +274,10 @@ EMAIL_BACKEND = email_config["EMAIL_BACKEND"]
 EMAIL_USE_TLS = email_config["EMAIL_USE_TLS"]
 EMAIL_USE_SSL = email_config["EMAIL_USE_SSL"]
 DEFAULT_FROM_EMAIL = get_env_variable("EMAIL_FROM", "webmaster@localhost")
+
+
+#################
+# Changelog gen #
+#################
+
+CHANGELOG_MD_PATH = os.path.join(BASE_DIR, "CHANGELOG.md")
