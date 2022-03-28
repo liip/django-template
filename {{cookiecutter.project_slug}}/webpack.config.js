@@ -4,7 +4,19 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const TerserJSPlugin = require('terser-webpack-plugin');
 const SpriteLoaderPlugin = require('svg-sprite-loader/plugin');
-const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
+const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
+
+const isDev = process.env.NODE_ENV !== 'production';
+const plugins = [
+  new MiniCssExtractPlugin({
+    filename: isDev ? '[name].css' : '[name].[contenthash].css',
+    chunkFilename: isDev ? '[id].css' : '[id].[contenthash].css',
+  }),
+  new SpriteLoaderPlugin(),
+  new CleanWebpackPlugin({
+    cleanOnceBeforeBuildPatterns: ['**/*', '!.gitkeep'],
+  }),
+];
 
 module.exports = {
   mode: process.env.NODE_ENV,
@@ -23,6 +35,7 @@ module.exports = {
     publicPath: '/static/dist/',
     filename: '[name].js',
   },
+  plugins,
   module: {
     rules: [
       {
@@ -33,12 +46,7 @@ module.exports = {
       {
         test: /\.css$/,
         use: [
-          {
-            loader: MiniCssExtractPlugin.loader,
-            options: {
-              hmr: process.env.NODE_ENV === 'development',
-            },
-          },
+          MiniCssExtractPlugin.loader,
           'css-loader',
           'postcss-loader',
         ],
@@ -73,15 +81,6 @@ module.exports = {
       },
     ],
   },
-  plugins: [
-    new MiniCssExtractPlugin({
-      filename: '[name].css',
-    }),
-    new SpriteLoaderPlugin(),
-    new CleanWebpackPlugin({
-        cleanOnceBeforeBuildPatterns: ['**/*', '!.gitkeep'],
-    }),
-  ],
   devServer: {
     proxy: {
       '**': {
@@ -91,14 +90,19 @@ module.exports = {
     allowedHosts: (process.env.ALLOWED_HOSTS || 'localhost').split(/\s+/),
     host: '0.0.0.0',
     port: 3000,
-    // Enable `sockPort` if you use Pontsun configuration
-    // sockPort: 443,
     compress: true,
-    overlay: true,
-    contentBase: ['./{{ cookiecutter.project_slug }}/**/templates/**/*.html'],
-    watchContentBase: true,
+    client: {
+      overlay: true,
+      // Enable `webSocketURL` if you use Pontsun configuration
+      // webSocketURL: {
+      //   port: 443,
+      // },
+    },
+    static: {
+      directory: './{{ cookiecutter.project_slug }}/**/templates/**/*.html',
+    },
   },
   optimization: {
-    minimizer: [new TerserJSPlugin(), new OptimizeCSSAssetsPlugin()],
+    minimizer: [new TerserJSPlugin(), new CssMinimizerPlugin()],
   },
 };
