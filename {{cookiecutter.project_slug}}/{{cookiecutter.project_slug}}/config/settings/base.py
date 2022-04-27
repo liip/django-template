@@ -92,11 +92,6 @@ CMS_PLACEHOLDER_CONF = {}
 
 {% endif %}
 
-SILENCED_SYSTEM_CHECKS = [
-    # False positive: we don't need to set `APP_DIRS=True` in template config
-    # because we already manually specify the "app_directories" loader.
-    "debug_toolbar.W006",
-]
 
 #############
 # DATABASES #
