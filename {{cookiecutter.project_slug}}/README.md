@@ -84,7 +84,7 @@ re-creating the database from scratch on each run.
 
 Before deploying, you should update the CHANGELOG.md file with the latest changes by running:
  ```
- docker-compose exec backend fab <environment> generate_changelog
+ docker-compose exec backend fab <environment> generate-changelog
 ```
 
 **Note**: this step is not strictly required, but be aware that the CHANGELOG.md file should reflect the current status

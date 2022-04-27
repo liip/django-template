@@ -360,7 +360,6 @@ def outgoing_commits(c):
     print_commits(get_outgoing_commits(c))
 
 
-@task
 @remote
 def files_to_deploy(c):
     with c.conn.cd(c.conn.project_root):
@@ -396,7 +395,7 @@ def get_local_modifications_count():
 
 @task
 @remote
-def generate_changelog(c, ignorecheck="n", initialize="n", **kwargs):
+def generate_changelog(c, ignorecheck=False, initialize=False, **kwargs):
     local_modification_count = get_local_modifications_count()
     check_ignored = ignorecheck.lower() in ("y", "yes")
     initialize = initialize.lower() in ("y", "yes")
@@ -411,7 +410,6 @@ def generate_changelog(c, ignorecheck="n", initialize="n", **kwargs):
         "generate_changelog",
         **{
             "jira-prefix": jira_prefix,
-            "environment": c.config.environment,
             "git-path": local_project_root,
             "initialize": initialize
         },
@@ -546,11 +544,6 @@ def import_db(c, dump_file=None, with_media=False):
 def jira_release(c, command, **kwargs):
     full_kwargs = dict()
 
-    if c.config["environment"] == "prod":
-        command = "comment_and_close_issues_to_deploy"
-    else:
-        command = "comment_after_deploy"
-
     if "remote-version" not in kwargs and "to-deploy-version" not in kwargs:
         with c.conn.cd(c.conn.project_root):
             remote_version = c.conn.git("rev-parse last_master", hide=True).stdout.strip()
@@ -632,7 +625,7 @@ def deploy(c, noconfirm=False):
         ).lower() not in ("y", "yes"):
             return
 
-    if "CHANGELOG.md" not in files_to_deploy():
+    if "CHANGELOG.md" not in files_to_deploy(c):
         if input(
             "Warning ! It seems that the CHANGELOG file was not updated for this deployment. "
             "Do you want to proceed ? [y/N] "
