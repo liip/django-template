@@ -66,10 +66,16 @@
 #       - pontsun
 #     labels:
 #       - 'traefik.enable=true'
+#       # traefik v1
 #       - 'traefik.docker.network=pontsun'
 #       - 'traefik.backend={{ cookiecutter.project_slug }}'
 #       - 'traefik.port=3000'
 #       - 'traefik.frontend.rule=Host:{{ subdomain }}.docker.test'
+#       # traefik v2
+#       - 'traefik.http.routers.{{ cookiecutter.project_slug }}_frontend.entrypoints=http,https'
+#       - 'traefik.http.routers.{{ cookiecutter.project_slug }}_frontend.middlewares=https_redirect@file'
+#       - 'traefik.http.routers.{{ cookiecutter.project_slug }}_frontend.rule=Host(`{{ subdomain }}.docker.test`)'
+#       - 'traefik.http.services.{{ cookiecutter.project_slug }}_frontend.loadbalancer.server.port=3000'
 #     environment:
 #       <<: *x-environment
 #     build:
@@ -81,10 +87,16 @@
 #       - pontsun
 #     labels:
 #       - 'traefik.enable=true'
+#       # traefik v1
 #       - 'traefik.docker.network=pontsun'
 #       - 'traefik.backend={{ cookiecutter.project_slug }}_mail'
 #       - 'traefik.port=8025'
 #       - 'traefik.frontend.rule=Host:{{ subdomain }}-mail.docker.test'
+#       # traefik v2
+#       - 'traefik.http.routers.{{ cookiecutter.project_slug }}_mailhog.entrypoints=http,https'
+#       - 'traefik.http.routers.{{ cookiecutter.project_slug }}_mailhog.middlewares=https_redirect@file'
+#       - 'traefik.http.routers.{{ cookiecutter.project_slug }}_mailhog.rule=Host(`{{ subdomain }}-mail.docker.test`)'
+#       - 'traefik.http.services.{{ cookiecutter.project_slug }}_mailhog.loadbalancer.server.port=8025'
 # networks:
 #   pontsun:
 #     external: true
