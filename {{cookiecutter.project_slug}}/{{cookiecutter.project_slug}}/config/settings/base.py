@@ -97,11 +97,6 @@ CMS_PLACEHOLDER_CONF = {}
 
 {% endif %}
 
-SILENCED_SYSTEM_CHECKS = [
-    # False positive: we don't need to set `APP_DIRS=True` in template config
-    # because we already manually specify the "app_directories" loader.
-    "debug_toolbar.W006",
-]
 
 #############
 # DATABASES #
@@ -154,6 +149,7 @@ TEMPLATES = [
         "DIRS": [
             os.path.join(BASE_DIR, "{{ cookiecutter.project_slug }}", "templates"),
         ],
+        "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
                 "django.contrib.auth.context_processors.auth",
@@ -170,16 +166,7 @@ TEMPLATES = [
                 "sekizai.context_processors.sekizai",
                 "cms.context_processors.cms_settings",
                 {%- endif %}
-            ],
-            "loaders": [
-                (
-                    "django.template.loaders.cached.Loader",
-                    [
-                        "django.template.loaders.filesystem.Loader",
-                        "django.template.loaders.app_directories.Loader",
-                    ],
-                )
-            ],
+            ]
         },
     }
 ]
