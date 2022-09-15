@@ -10,9 +10,6 @@ admin.autodiscover()
 urlpatterns = [
     path("", TemplateView.as_view(template_name="base.html")),
     path("admin/", admin.site.urls),
-    {%- if cookiecutter.use_djangocms == 'y' %}
-    path("", include("cms.urls")),
-    {%- endif %}
 ]
 
 if settings.DEBUG:

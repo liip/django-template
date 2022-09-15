@@ -28,11 +28,6 @@ LANGUAGES = (
 
 LOCALE_PATHS = ("locale/",)
 
-{%- if cookiecutter.use_djangocms == 'y' %}
-
-SITE_ID = 1
-{%- endif %}
-
 # A boolean that turns on/off debug mode. When set to ``True``, stack traces
 # are displayed for error pages. Should always be set to ``False`` in
 # production. Best set to ``True`` in dev.py
@@ -66,36 +61,6 @@ PASSWORD_HASHERS = [
     "django.contrib.auth.hashers.Argon2PasswordHasher",
     "django.contrib.auth.hashers.PBKDF2PasswordHasher"
 ]
-
-{% if cookiecutter.use_djangocms == 'y' %}
-################
-# CMS SETTINGS #
-################
-
-CMS_LANGUAGES = {
-    "default": {
-        "public": True,
-        "hide_untranslated": False,
-        "redirect_on_fallback": True,
-    },
-    1: [
-        {
-            "public": True,
-            "code": "en",
-            "hide_untranslated": False,
-            "name": gettext("en"),
-            "redirect_on_fallback": True,
-        }
-    ],
-}
-
-CMS_TEMPLATES = (("base.html", "Base"),)
-
-CMS_PERMISSION = True
-
-CMS_PLACEHOLDER_CONF = {}
-
-{% endif %}
 
 
 #############
@@ -161,11 +126,6 @@ TEMPLATES = [
                 "django.template.context_processors.csrf",
                 "django.template.context_processors.tz",
                 "django.template.context_processors.static",
-                {%- if cookiecutter.use_djangocms == 'y' %}
-
-                "sekizai.context_processors.sekizai",
-                "cms.context_processors.cms_settings",
-                {%- endif %}
             ]
         },
     }
@@ -181,18 +141,6 @@ INSTALLED_APPS = (
     {% if cookiecutter.override_user_model == 'y' -%}
     "{{ cookiecutter.project_slug }}.accounts.apps.AccountsConfig",
     {% endif -%}
-    {% if cookiecutter.use_djangocms == 'y' -%}
-    "djangocms_admin_style",
-    "djangocms_text_ckeditor",
-    "djangocms_link",
-    "cms",
-    "menus",
-    "treebeard",
-    "sekizai",
-    "filer",
-    "easy_thumbnails",
-    "django.contrib.sites",
-    {% endif -%}
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
@@ -205,9 +153,6 @@ INSTALLED_APPS = (
 # these middleware classes will be applied in the order given, and in the
 # response phase the middleware will be applied in reverse order.
 MIDDLEWARE = (
-    {% if cookiecutter.use_djangocms == 'y' -%}
-    "cms.middleware.utils.ApphookReloadMiddleware",
-    {% endif -%}
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -215,12 +160,6 @@ MIDDLEWARE = (
     "django.middleware.locale.LocaleMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    {%- if cookiecutter.use_djangocms == 'y' %}
-    "cms.middleware.user.CurrentUserMiddleware",
-    "cms.middleware.page.CurrentPageMiddleware",
-    "cms.middleware.toolbar.ToolbarMiddleware",
-    "cms.middleware.language.LanguageCookieMiddleware",
-    {%- endif %}
 )
 
 
