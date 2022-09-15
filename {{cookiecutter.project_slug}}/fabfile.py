@@ -360,6 +360,27 @@ def outgoing_commits(c):
     print_commits(get_outgoing_commits(c))
 
 
+@remote
+def files_to_deploy(c):
+    with c.conn.cd(c.conn.project_root):
+        remote_version = c.conn.git("rev-parse last_master", hide=True).stdout.strip()
+        new_version = subprocess.run(
+            "git rev-parse HEAD".split(" "),
+            text=True,
+            capture_output=True,
+            cwd=local_project_root,
+        ).stdout.strip()
+
+    return [
+            line
+            for line in subprocess.run(
+                f"git diff --name-only {remote_version}..{new_version}".split(" "),
+                text=True, capture_output=True
+            ).stdout.splitlines()
+            if line.strip()
+        ]
+
+
 def get_local_modifications_count():
     return len(
         [
@@ -369,6 +390,29 @@ def get_local_modifications_count():
             ).stdout.splitlines()
             if line.strip()
         ]
+    )
+
+
+@task
+@remote
+def generate_changelog(c, ignorecheck=False, initialize=False, **kwargs):
+    local_modification_count = get_local_modifications_count()
+    check_ignored = ignorecheck.lower() in ("y", "yes")
+    initialize = initialize.lower() in ("y", "yes")
+    if not check_ignored and local_modification_count > 0:
+        print(
+                f"There are {local_modification_count} local files that are not commited."
+                + " Please commit or discard changes before generating changelog"
+        )
+        return
+    jira_release(
+        c,
+        "generate_changelog",
+        **{
+            "jira-prefix": jira_prefix,
+            "git-path": local_project_root,
+            "initialize": initialize
+        },
     )
 
 
@@ -497,6 +541,33 @@ def import_db(c, dump_file=None, with_media=False):
         import_media(c)
 
 
+def jira_release(c, command, **kwargs):
+    full_kwargs = dict()
+
+    if "remote-version" not in kwargs and "to-deploy-version" not in kwargs:
+        with c.conn.cd(c.conn.project_root):
+            remote_version = c.conn.git("rev-parse last_master", hide=True).stdout.strip()
+            new_version = subprocess.run(
+                "git rev-parse HEAD".split(" "),
+                text=True,
+                capture_output=True,
+                cwd=local_project_root,
+            ).stdout.strip()
+
+        full_kwargs = {
+            "remote-version": remote_version,
+            "to-deploy-version": new_version,
+        }
+
+    full_kwargs.update(kwargs)
+
+    local_command = f"jira_release {command}"
+    for key, value in full_kwargs.items():
+        local_command += f" --{key}={value}"
+
+    subprocess.run(local_command.split(" "))
+
+
 @task
 @remote
 def comment_and_close_on_jira(c):
@@ -505,22 +576,14 @@ def comment_and_close_on_jira(c):
     else:
         command = "comment_after_deploy"
 
-    with c.conn.cd(c.conn.project_root):
-        remote_version = c.conn.git("rev-parse last_master", hide=True).stdout.strip()
-        new_version = subprocess.run(
-            "git rev-parse HEAD".split(" "),
-            text=True,
-            capture_output=True,
-            cwd=local_project_root,
-        ).stdout.strip()
-
-    subprocess.run(
-        f"jira_release {command} "
-        f"--jira-prefix={jira_prefix} "
-        f"--environment={c.config.environment} "
-        f"--remote-version={remote_version} "
-        f"--to-deploy-version={new_version} "
-        f"--git-path={local_project_root}".split(" ")
+    jira_release(
+        c,
+        command,
+        **{
+            "jira-prefix": jira_prefix,
+            "environment": c.config.environment,
+            "git-path": local_project_root,
+        },
     )
 
 
@@ -559,6 +622,13 @@ def deploy(c, noconfirm=False):
         if input(
             f"Warning ! There are {local_modification_count} local files that are not commited. "
             f"Do you want to proceed ? [y/N] "
+        ).lower() not in ("y", "yes"):
+            return
+
+    if "CHANGELOG.md" not in files_to_deploy(c):
+        if input(
+            "Warning ! It seems that the CHANGELOG file was not updated for this deployment. "
+            "Do you want to proceed ? [y/N] "
         ).lower() not in ("y", "yes"):
             return
 
