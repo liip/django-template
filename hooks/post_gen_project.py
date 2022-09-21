@@ -6,10 +6,6 @@ import re
 import shutil
 
 
-def install_drifter():
-    os.system('git init .')
-    os.system('curl -sS https://raw.githubusercontent.com/liip/drifter/master/install.sh | /bin/bash')
-
 
 def uninstall_docker():
     files_to_remove = {
@@ -49,8 +45,6 @@ def patch_parameters(path):
     set_parameter(path, 'database_name', '{{ cookiecutter.project_slug }}')
     set_parameter(path, 'hostname', "{{ cookiecutter.project_slug.replace('_', '-') }}.lo")
     set_parameter(path, 'python_version', '3')
-    set_parameter(path, 'box_name', 'drifter/stretch64-base')
-    set_parameter(path, 'box_url', 'https://vagrantbox-public.liip.ch/drifter-stretch64-base.json')
 
 
 def patch_playbook(path):

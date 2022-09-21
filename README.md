@@ -6,7 +6,7 @@ To create a new project using this template, do the following:
     pip install cookiecutter
     cookiecutter gh:liip/django-template
 
-Go to http://my-project.lo/ and start hacking!
+Go to http://my-project.dockert.test/ and start hacking!
 
 Troubleshooting
 ---------------
