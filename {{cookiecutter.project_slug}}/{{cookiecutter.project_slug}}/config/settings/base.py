@@ -104,6 +104,10 @@ CMS_PLACEHOLDER_CONF = {}
 
 DATABASES = {"default": dj_database_url.parse(get_env_variable("DATABASE_URL"))}
 
+# Allow using a separate password, from a k8s secret, for example
+DATABASE_PASSWORD = get_env_variable('DATABASE_PASSWORD', False)
+if DATABASE_PASSWORD:
+    DATABASES['default']['PASSWORD'] = DATABASE_PASSWORD
 
 #########
 # PATHS #
