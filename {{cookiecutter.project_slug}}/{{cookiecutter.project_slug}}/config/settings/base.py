@@ -126,7 +126,8 @@ TEMPLATES = [
                 "django.template.context_processors.csrf",
                 "django.template.context_processors.tz",
                 "django.template.context_processors.static",
-            ]
+            ],
+            "builtins": ["django.templatetags.i18n", "django.templatetags.static"],
         },
     }
 ]
