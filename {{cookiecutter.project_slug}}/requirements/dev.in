@@ -6,6 +6,9 @@ ipython
 pip-tools
 werkzeug
 
+# Translations
+django-rosetta
+
 # Deployment requirements
 fabric
 pip-tools
