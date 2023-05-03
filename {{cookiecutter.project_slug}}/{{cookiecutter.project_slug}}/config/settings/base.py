@@ -57,6 +57,8 @@ ALLOWED_HOSTS = tuple(get_env_variable("ALLOWED_HOSTS", "").splitlines())
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
+USE_X_FORWARDED_HOST = get_env_variable("USE_X_FORWARDED_HOST", False)
+
 SECRET_KEY = get_env_variable("SECRET_KEY", "")
 
 PASSWORD_HASHERS = [
