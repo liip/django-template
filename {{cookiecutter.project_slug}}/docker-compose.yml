@@ -1,3 +1,4 @@
+{% set network_name = cookiecutter.project_slug|replace("_", "") -%}
 x-environment:
   &x-environment
   INITIAL: "${INITIAL:-0}"
@@ -19,8 +20,8 @@ services:
       <<: *x-environment
       ALLOWED_HOSTS: >-
         localhost
-      DATABASE_URL: postgresql://postgres:{{ cookiecutter.project_slug }}@db/{{ cookiecutter.project_slug }}
-      EMAIL_URL: smtp://mailhog:1025
+      DATABASE_URL: postgresql://postgres:{{ cookiecutter.project_slug }}@db.{{ cookiecutter.__network_name }}/{{ cookiecutter.project_slug }}
+      EMAIL_URL: smtp://mailhog.{{ cookiecutter.__network_name }}:1025
       MEDIA_ROOT: /opt/media
     volumes:
       - media:/opt/media
@@ -42,6 +43,11 @@ services:
       <<: *x-environment
   mailhog:
     image: mailhog/mailhog:v1.0.1
+
+networks:
+  default:
+    name: {{ cookiecutter.__network_name }}
+
 volumes:
   media:
   pgdata:

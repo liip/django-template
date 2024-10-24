@@ -1,4 +1,5 @@
-{% set subdomain = cookiecutter.project_slug|replace("_", "-") %}# Docker-compose override examples
+{% set subdomain = cookiecutter.project_slug|replace("_", "-") -%}
+# Docker-compose override examples
 # ================================
 #
 # Make a copy of this file and name it `docker-compose.override.yml`, then
@@ -41,6 +42,7 @@
 #   JIRA_USERNAME: username
 #   JIRA_PASSWORD: password
 #   JIRA_URL: https://jira.liip.ch
+#
 # x-build-args: &x-build-args
 #  USER_ID: 1000   # Change this if your host user is not 1000
 #  GROUP_ID: 1000  # Change this if your host group is not 1000
@@ -103,6 +105,7 @@
 #       - 'traefik.http.routers.{{ cookiecutter.project_slug }}_mailhog.middlewares=https_redirect@file'
 #       - 'traefik.http.routers.{{ cookiecutter.project_slug }}_mailhog.rule=Host(`{{ subdomain }}-mail.docker.test`)'
 #       - 'traefik.http.services.{{ cookiecutter.project_slug }}_mailhog.loadbalancer.server.port=8025'
+#
 # networks:
 #   pontsun:
 #     external: true
