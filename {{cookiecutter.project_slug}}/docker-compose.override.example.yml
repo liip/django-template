@@ -49,12 +49,20 @@
 #   backend:
 #     environment:
 #       <<: *x-environment
-#       SSH_AUTH_SOCK: /ssh-agent
+#       SSH_AUTH_SOCK: /run/host-services/ssh-auth.sock
 #       JIRA_USERNAME: username
 #       JIRA_PASSWORD: password
 #       JIRA_URL: https://jira.liip.ch
-#     volumes:
-#       - $SSH_AUTH_SOCK:/ssh-agent
+#
+#     ## To forward SSH agent to the container, read https://wiki.liip.ch/x/FyDVJw
+#     ## and uncomment one of the following volumes:
+#     ## on macOS:
+#     # volumes:
+#     #   - /run/host-services/ssh-auth.sock:/run/host-services/ssh-auth.sock
+#     ## on Linux:
+#     # volumes:
+#     #   - ${SSH_AUTH_SOCK:-/dev/null}:/run/host-services/ssh-auth.sock
+#
 #     build:
 #       args:
 #         <<: *x-build-args
