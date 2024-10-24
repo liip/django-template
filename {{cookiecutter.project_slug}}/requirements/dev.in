@@ -8,4 +8,3 @@ werkzeug
 # Deployment requirements
 fabric
 dulwich<=0.20.3
-git+https://github.com/liip/jira_release_helper.git@main

@@ -37,11 +37,6 @@
 #   &x-environment
 #   ALLOWED_HOSTS: |-
 #     {{ subdomain }}.docker.test
-#   # These Jira variables allow the use of the "jira_release_helper" tool, which posts comments, closes stories
-#   # automatically on deployment.
-#   JIRA_USERNAME: username
-#   JIRA_PASSWORD: password
-#   JIRA_URL: https://jira.liip.ch
 #
 # x-build-args: &x-build-args
 #  USER_ID: 1000   # Change this if your host user is not 1000
@@ -52,9 +47,6 @@
 #     environment:
 #       <<: *x-environment
 #       SSH_AUTH_SOCK: /run/host-services/ssh-auth.sock
-#       JIRA_USERNAME: username
-#       JIRA_PASSWORD: password
-#       JIRA_URL: https://jira.liip.ch
 #
 #     ## To forward SSH agent to the container, read https://wiki.liip.ch/x/FyDVJw
 #     ## and uncomment one of the following volumes:

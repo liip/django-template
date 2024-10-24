@@ -39,7 +39,6 @@ ENVIRONMENTS = {
 
 local_project_root = os.path.dirname(__file__)
 project_name = "{{ cookiecutter.project_slug }}"
-jira_prefix = "{{ cookiecutter.jira_prefix }}"
 
 
 class MissingEnvVariable(Exception):
@@ -497,33 +496,6 @@ def import_db(c, dump_file=None, with_media=False):
         import_media(c)
 
 
-@task
-@remote
-def comment_and_close_on_jira(c):
-    if c.config["environment"] == "prod":
-        command = "comment_and_close_issues_to_deploy"
-    else:
-        command = "comment_after_deploy"
-
-    with c.conn.cd(c.conn.project_root):
-        remote_version = c.conn.git("rev-parse last_master", hide=True).stdout.strip()
-        new_version = subprocess.run(
-            "git rev-parse HEAD".split(" "),
-            text=True,
-            capture_output=True,
-            cwd=local_project_root,
-        ).stdout.strip()
-
-    subprocess.run(
-        f"jira_release {command} "
-        f"--jira-prefix={jira_prefix} "
-        f"--environment={c.config.environment} "
-        f"--remote-version={remote_version} "
-        f"--to-deploy-version={new_version} "
-        f"--git-path={local_project_root}".split(" ")
-    )
-
-
 @remote
 def update_or_create_last_master(c):
     with c.conn.cd(c.conn.project_root):
@@ -573,7 +545,6 @@ def deploy(c, noconfirm=False):
     dj_migrate_database(c)
     reload_uwsgi(c)
     c.conn.clean_old_database_backups(nb_backups_to_keep=10)
-    comment_and_close_on_jira(c)
     update_or_create_last_master(c)
 
 
