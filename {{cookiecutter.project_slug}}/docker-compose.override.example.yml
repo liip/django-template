@@ -13,7 +13,6 @@
 #
 # Visit http://localhost:8025 to access the project's fake mail box.
 #
-# version: '3.8'
 # services:
 #   backend:
 #     ports:
@@ -33,7 +32,6 @@
 #
 # Visit https://{{ subdomain }}-mail.docker.test/ to access the project's fake mail box.
 #
-# version: '3.8'
 # x-environment:
 #   &x-environment
 #   ALLOWED_HOSTS: |-
