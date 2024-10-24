@@ -6,4 +6,4 @@ set -e
 
 pytest "${@:-{{ cookiecutter.project_slug }}}"
 
-flake8 {{ cookiecutter.project_slug }} fabfile.py
+ruff check {{ cookiecutter.project_slug }} fabfile.py

@@ -1,12 +1,9 @@
 -r base.in
 
-black
 factory_boy
-flake8
-flake8-black
-flake8-isort
 ipdb
 pytest
 pytest-cov
 pytest-django
 pytest-xdist
+ruff
