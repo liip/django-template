@@ -45,5 +45,23 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS("OK"))
 
     def handle(self, *args, **options):
+        if not options["force_yes"]:
+            self.stdout.write(
+                self.style.WARNING("WARNING")
+                + "\nThis will REMOVE ALL EXISTING DATA from the database.\n"
+                "Are you SURE you want to do that? (y/N) ",
+                ending="",
+            )
+
+            try:
+                result = input()
+            except KeyboardInterrupt:
+                self.stdout.write("Aborting.")
+                return
+
+            if result.lower() != "y":
+                self.stdout.write("Aborting.")
+                return
+
         with self.print_step("Resetting the database..."):
             reset_db()
