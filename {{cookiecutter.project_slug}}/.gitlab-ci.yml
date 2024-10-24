@@ -5,7 +5,7 @@ test:
   stage: test
   tags:
     - docker-nonswiss-ok
-  image: &test_image 'python:3.9-bullseye'
+  image: &test_image 'python:3.11-bookworm'
   services:
     - name: postgres:15
       alias: db
