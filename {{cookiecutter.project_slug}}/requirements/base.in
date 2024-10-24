@@ -1,5 +1,5 @@
-dj-database-url
-Django>=4.0,<4.1 # TODO: Update to 4.2 LTS when it is released (April 2023)
-psycopg2-binary
-dj_email_url
 argon2-cffi
+django>=4.2,<4.3  # Latest LTS
+dj-database-url
+dj-email-url
+psycopg2-binary
