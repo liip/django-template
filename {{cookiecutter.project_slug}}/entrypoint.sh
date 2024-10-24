@@ -2,14 +2,16 @@
 # We need to use bash because of the use of the /dev/tcp device
 
 if [ ! -e "$VIRTUAL_ENV/bin" ]; then
+    # Note that the venv exists in the base image,
+    # so this is only useful when bind-mounting /venv
     echo "Creating virtualenv at \"$VIRTUAL_ENV\""
     python -m venv "$VIRTUAL_ENV"
     pip install wheel
+    pip install pip-tools
 fi
 
 if [ "$INITIAL" = "1" ]; then
     if [ ! -e "requirements/dev.txt" ]; then
-        pip install pip-tools
         pip-compile requirements/dev.in
     fi
 
