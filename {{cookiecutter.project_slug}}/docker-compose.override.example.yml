@@ -47,6 +47,9 @@
 #     environment:
 #       <<: *x-environment
 #       SSH_AUTH_SOCK: /run/host-services/ssh-auth.sock
+#       DJANGO_VITE_DEV_SERVER_PROTOCOL: 'https'
+#       DJANGO_VITE_DEV_SERVER_HOST: '{{ subdomain }}.docker.test'
+#       DJANGO_VITE_DEV_SERVER_PORT: ''
 #
 #     ## To forward SSH agent to the container, read https://wiki.liip.ch/x/FyDVJw
 #     ## and uncomment one of the following volumes:
@@ -66,12 +69,6 @@
 #       - pontsun
 #     labels:
 #       - 'traefik.enable=true'
-#       # traefik v1
-#       - 'traefik.docker.network=pontsun'
-#       - 'traefik.backend={{ cookiecutter.project_slug }}'
-#       - 'traefik.port=3000'
-#       - 'traefik.frontend.rule=Host:{{ subdomain }}.docker.test'
-#       # traefik v2
 #       - 'traefik.http.routers.{{ cookiecutter.project_slug }}_frontend.entrypoints=http,https'
 #       - 'traefik.http.routers.{{ cookiecutter.project_slug }}_frontend.middlewares=https_redirect@file'
 #       - 'traefik.http.routers.{{ cookiecutter.project_slug }}_frontend.rule=Host(`{{ subdomain }}.docker.test`)'
@@ -87,12 +84,6 @@
 #       - pontsun
 #     labels:
 #       - 'traefik.enable=true'
-#       # traefik v1
-#       - 'traefik.docker.network=pontsun'
-#       - 'traefik.backend={{ cookiecutter.project_slug }}_mail'
-#       - 'traefik.port=8025'
-#       - 'traefik.frontend.rule=Host:{{ subdomain }}-mail.docker.test'
-#       # traefik v2
 #       - 'traefik.http.routers.{{ cookiecutter.project_slug }}_mailhog.entrypoints=http,https'
 #       - 'traefik.http.routers.{{ cookiecutter.project_slug }}_mailhog.middlewares=https_redirect@file'
 #       - 'traefik.http.routers.{{ cookiecutter.project_slug }}_mailhog.rule=Host(`{{ subdomain }}-mail.docker.test`)'
