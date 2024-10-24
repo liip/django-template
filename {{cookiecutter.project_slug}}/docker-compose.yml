@@ -5,7 +5,7 @@ x-environment:
 
 services:
   db:
-    image: postgres:11.8
+    image: postgres:15
     environment:
       POSTGRES_PASSWORD: {{ cookiecutter.project_slug }}
       POSTGRES_DB: {{ cookiecutter.project_slug }}
