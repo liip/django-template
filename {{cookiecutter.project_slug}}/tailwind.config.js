@@ -1,9 +1,5 @@
-module.exports = {
-  purge: {
-    content: ['./{{ cookiecutter.project_slug }}/**/*.html'],
-    options: {},
-  },
+export default {
+  content: ['./{{ cookiecutter.project_slug }}/**/*.html'],
   theme: {},
-  variants: {},
   plugins: [],
 };

@@ -1,5 +1,5 @@
-/*----------------------------------------*\
-  Main stylesheet
-\*----------------------------------------*/
+@import 'tailwindcss/base';
 
-/* Here goes your project styles */
+@import 'tailwindcss/components';
+
+@import 'tailwindcss/utilities';
