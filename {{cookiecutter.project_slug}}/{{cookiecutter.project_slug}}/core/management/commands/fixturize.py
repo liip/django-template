@@ -1,6 +1,7 @@
 from contextlib import contextmanager
 from io import StringIO
 
+from django.conf import settings
 from django.core import management
 from django.core.management.base import BaseCommand
 from django.db import connection
@@ -45,6 +46,9 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS("OK"))
 
     def handle(self, *args, **options):
+        # Do not send emails when performing fake tasks
+        settings.EMAIL_BACKEND = "django.core.mail.backends.dummy.EmailBackend"
+
         if not options["force_yes"]:
             self.stdout.write(
                 self.style.WARNING("WARNING")
