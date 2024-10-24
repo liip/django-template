@@ -16,4 +16,4 @@ INSTALLED_APPS += ("debug_toolbar", "django_extensions")  # noqa
 
 STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
 
-DJANGO_VITE_DEV_MODE = True
+DJANGO_VITE_DEV_MODE = bool(int(get_env_variable("DJANGO_VITE_DEV_MODE", True)))
