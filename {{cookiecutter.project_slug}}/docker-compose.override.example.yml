@@ -42,8 +42,9 @@
 #   JIRA_PASSWORD: password
 #   JIRA_URL: https://jira.liip.ch
 # x-build-args: &x-build-args
-#  # USER_ID: 1001  # Set if your dev user  is non-1000
-#  # GROUP_ID: 1001 # Set if your dev group is non-1000
+#  USER_ID: 1000   # Change this if your host user is not 1000
+#  GROUP_ID: 1000  # Change this if your host group is not 1000
+#
 # services:
 #   backend:
 #     environment:
