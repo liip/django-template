@@ -1,20 +1,16 @@
-version: '3.8'
-
+{% set network_name = cookiecutter.project_slug|replace("_", "") -%}
 x-environment:
   &x-environment
   INITIAL: "${INITIAL:-0}"
 
 services:
   db:
-    image: postgres:11.8
+    image: postgres:15
     environment:
-      POSTGRES_HOST_AUTH_METHOD: trust
-      POSTGRES_PASSWORD:
+      POSTGRES_PASSWORD: {{ cookiecutter.project_slug }}
       POSTGRES_DB: {{ cookiecutter.project_slug }}
     volumes:
       - pgdata:/var/lib/postgresql/data
-    ports:
-      - 5432
   backend:
     build:
       context: .
@@ -24,11 +20,9 @@ services:
       <<: *x-environment
       ALLOWED_HOSTS: >-
         localhost
-      DATABASE_URL: postgresql://postgres@db/{{ cookiecutter.project_slug }}
-      EMAIL_URL: smtp://mailhog:1025
+      DATABASE_URL: postgresql://postgres:{{ cookiecutter.project_slug }}@db.{{ cookiecutter.__network_name }}/{{ cookiecutter.project_slug }}
+      EMAIL_URL: smtp://mailhog.{{ cookiecutter.__network_name }}:1025
       MEDIA_ROOT: /opt/media
-    ports:
-      - 8000
     volumes:
       - media:/opt/media
       - venv:/venv
@@ -45,14 +39,15 @@ services:
     init: true
     volumes:
       - .:/code
-    ports:
-      - 3000
     environment:
       <<: *x-environment
   mailhog:
     image: mailhog/mailhog:v1.0.1
-    ports:
-      - 8025
+
+networks:
+  default:
+    name: {{ cookiecutter.__network_name }}
+
 volumes:
   media:
   pgdata:

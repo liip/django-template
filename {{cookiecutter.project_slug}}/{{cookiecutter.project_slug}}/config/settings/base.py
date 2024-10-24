@@ -186,11 +186,43 @@ AUTH_USER_MODEL = "accounts.User"
 # LOGGING #
 ###########
 
+# Django first applies its default configuration (`django.utils.log.DEFAULT_LOGGING`),
+# then it applies this one (it calls logging.config.dictConfig twice).
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
-    "handlers": {"console": {"level": "INFO", "class": "logging.StreamHandler"}},
-    "loggers": {"": {"handlers": ["console"], "level": "ERROR", "propagate": True}},
+    # This config will not affect existing handlers/filters/formatters that were
+    # declared with the same name, and loggers of this config can only reference these
+    # handlers/filters/formatters.
+    "formatters": {
+        "simple": {"format": "{name}:{levelname[0]} {message}", "style": "{"},
+    },
+    "handlers": {
+        "console": {
+            "level": "INFO",
+            "formatter": "simple",
+            "class": "logging.StreamHandler",
+        },
+    },
+    # If loggers with the same name already exist, dictConfig will only apply explicitly
+    # specified settings to the existing loggers, except for "handlers" and "filters"
+    # that are always reset (see `logging.config.DictConfigurator.configure_logger`).
+    #
+    # On the other hand, for child loggers (e.g. "django.server" when overriding "django"),
+    # dictConfig will reset "handlers", "level" and "propagate" to their default values,
+    # but not "filters" (see `logging.config._handle_existing_loggers`).
+    "loggers": {
+        "": {
+            "handlers": ["console"],
+            "level": "NOTSET",
+        },
+        "django": {
+            # Delegate to root logger
+            "handlers": (),
+            "level": "NOTSET",
+            "propagate": True,
+        },
+    },
 }
 
 
