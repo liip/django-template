@@ -7,4 +7,4 @@ werkzeug
 
 # Deployment requirements
 fabric
-dulwich<=0.20.3
+dulwich
