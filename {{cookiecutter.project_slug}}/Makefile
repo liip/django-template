@@ -28,11 +28,14 @@ compile-translations: ## Compile .po files with ./manage.py compilemessages
 	./manage.py compilemessages
 
 format:  # Fix some linting issues in the project
-	black {{ cookiecutter.project_slug }} fabfile.py
-	isort {{ cookiecutter.project_slug }} fabfile.py
+	ruff format {{ cookiecutter.project_slug }} fabfile.py
+	ruff check --select I --fix {{ cookiecutter.project_slug }} fabfile.py
 
 lint:  # Show linting issues in the project
-	flake8 {{ cookiecutter.project_slug }} fabfile.py
+	ruff check {{ cookiecutter.project_slug }} fabfile.py
+
+lint-full:  # Show all linting issues, code smells and bad practices in the project
+	ruff check --select ALL {{ cookiecutter.project_slug }} fabfile.py
 
 .PHONY: help
 help: ## Display this help
