@@ -5,9 +5,9 @@ test:
   stage: test
   tags:
     - docker-nonswiss-ok
-  image: &test_image 'python:3.9-bullseye'
+  image: &test_image 'python:3.11-bookworm'
   services:
-    - name: postgres:11.8
+    - name: postgres:15
       alias: db
   variables:
     DJANGO_SETTINGS_MODULE: "{{ cookiecutter.project_slug }}.config.settings.test"

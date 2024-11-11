@@ -2,9 +2,7 @@
 # -*- encoding: utf-8 -*-
 
 import os
-import re
 import shutil
-
 
 
 def uninstall_docker():
@@ -16,64 +14,6 @@ def uninstall_docker():
 
     for file_ in files_to_remove:
         os.remove(file_)
-
-
-def set_parameter(path, key, value):
-    patched_lines = []
-    parameter_exists = False
-
-    with open(path) as f:
-        lines = f.readlines()
-
-    for line in lines:
-        if line.startswith('{}:'.format(key)):
-            line = '{key}: "{value}"\n'.format(key=key, value=value)
-            parameter_exists = True
-        patched_lines.append(line)
-
-    if not parameter_exists:
-        patched_lines.append('{key}: "{value}"\n'.format(key=key, value=value))
-
-    with open(path, 'w') as f:
-        f.write(''.join(patched_lines))
-
-
-def patch_parameters(path):
-    set_parameter(path, 'pip_requirements', 'requirements/dev.txt')
-    set_parameter(path, 'pip_requirements_dir', 'requirements')
-    set_parameter(path, 'project_name', '{{ cookiecutter.project_slug }}')
-    set_parameter(path, 'database_name', '{{ cookiecutter.project_slug }}')
-    set_parameter(path, 'hostname', "{{ cookiecutter.project_slug.replace('_', '-') }}.lo")
-    set_parameter(path, 'python_version', '3')
-
-
-def patch_playbook(path):
-    patched_lines = []
-    roles_to_enable = set(['django', 'postgresql', 'webpack', 'gitlabci'])
-
-    with open(path) as f:
-        lines = f.readlines()
-
-    for line in lines:
-        role_match = re.search(r'role: (\w+)', line)
-
-        if role_match and role_match.group(1) in roles_to_enable:
-            line = line.replace('# -', '-')
-
-        patched_lines.append(line)
-    patched_lines.append(
-        """
-  tasks:
-  - name: Make sure rsync is installed
-    apt:
-      state: present
-      pkg: rsync
-    become: yes
-"""
-    )
-
-    with open(path, 'w') as f:
-        f.write(''.join(patched_lines))
 
 
 def generate_blank_locale_files():
