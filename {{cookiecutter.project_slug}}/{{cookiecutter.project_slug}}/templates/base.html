@@ -1,16 +1,18 @@
+{% load django_vite %}
+{% get_current_language as LANGUAGE_CODE %}
 <!DOCTYPE html>
-<html>
+<html lang="{{ LANGUAGE_CODE }}">
   <head>
     <meta charset="UTF-8">
-    <title></title>
+    <title>{{ cookiecutter.project_name }}</title>
 
-    <link rel="stylesheet" type="text/css" href="{% static 'dist/common.css' %}">
+    {% vite_hmr_client %}
+    {% vite_asset 'assets/js/common.js' %}
   </head>
+
   <body>
     {% block body %}
     It works!
     {% endblock %}
-
-    <script type="text/javascript" src="{% static 'dist/common.js' %}"></script>
   </body>
 </html>

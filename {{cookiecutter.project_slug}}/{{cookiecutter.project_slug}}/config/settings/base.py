@@ -156,6 +156,7 @@ INSTALLED_APPS = (
     "django.contrib.admin",
     "django.contrib.staticfiles",
     "django.contrib.messages",
+    "django_vite",
 )
 
 # List of middleware classes to use. Order is important; in the request phase,
@@ -176,6 +177,7 @@ MIDDLEWARE = (
 ##################
 # AUTHENTICATION #
 ##################
+
 AUTH_USER_MODEL = "accounts.User"
 
 
@@ -229,6 +231,7 @@ LOGGING = {
 #############
 # E-Mailing #
 #############
+
 EMAIL_URL = get_env_variable("EMAIL_URL", "console://")
 email_config = dj_email_url.parse(EMAIL_URL)
 EMAIL_FILE_PATH = email_config["EMAIL_FILE_PATH"]
@@ -240,3 +243,21 @@ EMAIL_BACKEND = email_config["EMAIL_BACKEND"]
 EMAIL_USE_TLS = email_config["EMAIL_USE_TLS"]
 EMAIL_USE_SSL = email_config["EMAIL_USE_SSL"]
 DEFAULT_FROM_EMAIL = get_env_variable("EMAIL_FROM", "webmaster@localhost")
+
+
+########
+# VITE #
+########
+
+DJANGO_VITE_DEV_MODE = False
+DJANGO_VITE_DEV_SERVER_PROTOCOL = get_env_variable(
+    "DJANGO_VITE_DEV_SERVER_PROTOCOL", "http"
+)
+DJANGO_VITE_DEV_SERVER_HOST = get_env_variable(
+    "DJANGO_VITE_DEV_SERVER_HOST", "localhost"
+)
+DJANGO_VITE_DEV_SERVER_PORT = get_env_variable("DJANGO_VITE_DEV_SERVER_PORT", "3000")
+DJANGO_VITE_ASSETS_PATH = os.path.join("static", "dist")
+# Already relative to static files storage URL
+DJANGO_VITE_STATIC_URL_PREFIX = "dist"
+DJANGO_VITE_MANIFEST_PATH = os.path.join("static", "dist", ".vite", "manifest.json")

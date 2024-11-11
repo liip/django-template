@@ -1,5 +1,5 @@
-{{ cookiecutter.project_name }}
-=======
+# {{ cookiecutter.project_name }}
+
 {% if cookiecutter.virtualization_tool == 'docker' %}
 
 ### Build
@@ -12,7 +12,7 @@ npm run build
 
 ### Formatting and Linting
 
-It’s recommended to have Prettier, EsLint and Stylelint enabled in your Editor.
+It’s recommended to have Prettier and EsLint enabled in your Editor.
 
 You can manually check that the code matches with the guidelines by running:
 
@@ -41,8 +41,8 @@ you want to reset the database.
 ## Automated tests
 
 To run backend tests and lint checks, run `scripts/run_tests.sh` in the `backend` container:
-* `docker-compose exec backend scripts/run_tests.sh`
-* or `docker-compose run --rm backend scripts/run_tests.sh` if the `backend` service is not already running
+- `docker-compose exec backend scripts/run_tests.sh`
+- or `docker-compose run --rm backend scripts/run_tests.sh` if the `backend` service is not already running
 
 CLI arguments are forwarded to `pytest`.
 For example, running tests with `scripts/run_tests.sh {{ cookiecutter.project_slug }} --reuse-db` avoids

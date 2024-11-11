@@ -3,3 +3,4 @@ django>=4.2,<4.3  # Latest LTS
 dj-database-url
 dj-email-url
 psycopg2-binary
+django-vite
