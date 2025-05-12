@@ -13,6 +13,7 @@ __pycache__
 
 {%- if cookiecutter.virtualization_tool == 'docker' %}
 /docker-compose.override.yml
+/override.justfile
 /venv
 /.env
 {%- endif %}
