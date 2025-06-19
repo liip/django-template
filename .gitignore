@@ -1,3 +1,4 @@
 *.pyc
 /envdir/*
 .pycharm_helpers
+/my_project

@@ -1,5 +1,4 @@
-Django project template
-=======================
+# Django project template
 
 To create a new project using this template, do the following:
 
@@ -8,8 +7,7 @@ To create a new project using this template, do the following:
 
 Go to http://my-project.docker.test/ and start hacking!
 
-Troubleshooting
----------------
+## Troubleshooting
 
 If you get the following error when running `cookiecutter`:
 
@@ -29,9 +27,7 @@ ImportError: No module named req_set
 That's because your `pip` version is too old. Upgrade it either with your
 package manager, or by running `pip install --upgrade pip`.
 
-
-Deploying your site
--------------------
+## Deploying your site
 
 You can use the provided `fabfile` to deploy your site. Before using it, check
 the `fabfile.py` file and adjust the settings at the top of the file.
@@ -48,3 +44,19 @@ to bootstrap. After the site is bootstrapped, subsequent deployments can be
 done with the `deploy` command:
 
     fab dev deploy
+
+## Contributing
+
+If you don’t happen to have [just](https://github.com/casey/just) installed, take a look at the `justfile` and run the commands manually.
+
+You can easily generate a new project using this template by running:
+
+```bash
+just generate
+```
+
+After that, quickly configure and start Docker with Pontsun by running:
+
+```bash
+just start
+```
