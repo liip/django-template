@@ -1,7 +1,9 @@
 alias g := generate
 # Run cookiecutter with local template
 generate:
-  cookiecutter . -f --no-input
+  rm -rf \{\{cookiecutter.project_slug\}\}/node_modules
+  rm -rf my_project
+  cookiecutter . --no-input
 
 alias s := start
 # Setup and start the playground project using Pontsun

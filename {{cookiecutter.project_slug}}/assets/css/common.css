@@ -1,5 +1,12 @@
-@import 'tailwindcss/base';
+@import 'tailwindcss';
 
-@import 'tailwindcss/components';
+@import './theme.css';
 
-@import 'tailwindcss/utilities';
+@layer base {
+}
+
+@layer components {
+}
+
+@layer utilities {
+}

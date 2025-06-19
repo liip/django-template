@@ -1,5 +1,6 @@
 import { resolve } from 'path';
 import { defineConfig } from 'vite';
+import tailwindcss from '@tailwindcss/vite';
 import liveReload from 'vite-plugin-live-reload';
 
 export default defineConfig(() => ({
@@ -22,13 +23,14 @@ export default defineConfig(() => ({
     },
   },
 
-  plugins: [liveReload(['**/templates/**/*.html'])],
+  plugins: [tailwindcss(), liveReload(['**/templates/**/*.html'])],
 
   server: {
     port: 3000,
     // Do not use another port if 3000 is busy, its hardcoded elsewhere and required to work properly
     strictPort: true,
     host: true,
+    allowedHosts: ['{{ cookiecutter.project_slug|replace("_", "-") }}.docker.test'],
     proxy: {
       '^(?!/static/dist/)': {
         target: 'http://backend.{{ cookiecutter.__network_name }}:8000',
