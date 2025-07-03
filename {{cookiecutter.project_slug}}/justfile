@@ -1,0 +1,93 @@
+export BACKEND_CONTAINER := "backend"
+export FRONTEND_CONTAINER := "frontend"
+
+set allow-duplicate-recipes
+set positional-arguments
+
+default:
+  just --list
+
+# Run the development server
+start *args:
+  docker compose up "$@"
+
+# Run bash in backend container
+bash:
+  docker compose exec {{ '{{' }} BACKEND_CONTAINER }} bash
+
+alias django := manage
+alias dj := manage
+# Run a Django manage.py command
+manage *args:
+  docker compose exec {{ '{{' }} BACKEND_CONTAINER }} python manage.py "$@"
+
+# Run manage.py shell_plus
+alias shell := shell_plus
+alias sp := shell_plus
+shell_plus *args:
+  docker compose exec {{ '{{' }} BACKEND_CONTAINER }} python manage.py shell_plus "$@"
+
+alias t := test
+# Run the tests suite
+test *args:
+  docker compose exec {{ '{{' }} BACKEND_CONTAINER }} pytest "$@"
+
+alias validate := lint
+alias l := lint
+# Lint the code
+lint:
+  docker compose exec {{ '{{' }} BACKEND_CONTAINER }} ruff check {{ cookiecutter.project_slug }} fabfile.py
+  docker compose exec {{ '{{' }} FRONTEND_CONTAINER }} npm run validate
+
+alias fix := format
+# Fix styling offenses and format code
+format:
+  docker compose exec {{ '{{' }} BACKEND_CONTAINER }} ruff format {{ cookiecutter.project_slug }} fabfile.py
+  docker compose exec {{ '{{' }} BACKEND_CONTAINER }} ruff check --fix {{ cookiecutter.project_slug }} fabfile.py
+  docker compose exec {{ '{{' }} FRONTEND_CONTAINER }} npm run format
+
+alias c := compile
+# Compile pip requirements files
+compile:
+  docker compose exec {{ '{{' }} BACKEND_CONTAINER }} pip-compile requirements/base.in
+  docker compose exec {{ '{{' }} BACKEND_CONTAINER }} pip-compile requirements/test.in
+  docker compose exec {{ '{{' }} BACKEND_CONTAINER }} pip-compile requirements/dev.in
+
+alias cu := compile-upgrade
+# Update pip requirements files
+compile-upgrade file='requirements/base.in':
+  docker compose exec {{ '{{' }} BACKEND_CONTAINER }} pip-compile --upgrade {{ '{{' }} file }}
+
+alias i := install
+# Install pip and npm dependencies
+install file='requirements/dev.txt':
+  docker compose exec {{ '{{' }} BACKEND_CONTAINER }} pip install -r {{ '{{' }} file }}
+  docker compose exec {{ '{{' }} FRONTEND_CONTAINER }} npm install
+
+alias mm := makemigrations
+# Generate database migrations
+makemigrations *args:
+  docker compose exec {{ '{{' }} BACKEND_CONTAINER }} python manage.py makemigrations "$@"
+
+alias m := migrate
+# Migrate the database
+migrate *args:
+  docker compose exec {{ '{{' }} BACKEND_CONTAINER }} python manage.py migrate "$@"
+
+alias f := fixturize
+# Reset the database and load the fixtures
+fixturize *args:
+  docker compose exec {{ '{{' }} BACKEND_CONTAINER }} python manage.py fixturize --yes "$@"
+
+alias messages := translate
+# Make messages and compile them
+translate:
+	docker compose exec {{ '{{' }} BACKEND_CONTAINER }} python manage.py makemessages -a -i "requirements/*" -i "node_modules/*"
+	docker compose exec {{ '{{' }} BACKEND_CONTAINER }} python manage.py makemessages -a -d djangojs -i "node_modules/*" -i "static/*"
+	docker compose exec {{ '{{' }} BACKEND_CONTAINER }} python manage.py compilemessages
+
+# Run npm command
+npm *args:
+  docker compose exec {{ '{{' }} FRONTEND_CONTAINER }} npm "$@"
+
+import? 'override.justfile'
