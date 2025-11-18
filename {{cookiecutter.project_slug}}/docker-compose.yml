@@ -21,7 +21,7 @@ services:
       ALLOWED_HOSTS: >-
         localhost
       DATABASE_URL: postgresql://postgres:{{ cookiecutter.project_slug }}@db.{{ cookiecutter.__network_name }}/{{ cookiecutter.project_slug }}
-      EMAIL_URL: smtp://mailhog.{{ cookiecutter.__network_name }}:1025
+      EMAIL_URL: smtp://mailpit.{{ cookiecutter.__network_name }}:1025
       MEDIA_ROOT: /opt/media
     volumes:
       - media:/opt/media
@@ -41,9 +41,8 @@ services:
       - .:/code
     environment:
       <<: *x-environment
-  mailhog:
-    image: mailhog/mailhog:v1.0.1
-
+  mailpit:
+    image: axllent/mailpit:latest
 networks:
   default:
     name: {{ cookiecutter.__network_name }}
