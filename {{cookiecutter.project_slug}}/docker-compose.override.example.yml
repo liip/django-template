@@ -21,7 +21,7 @@
 #   frontend:
 #     ports:
 #       - 127.0.0.1:3000:3000
-#   mailhog:
+#   mailpit:
 #     ports:
 #       - 127.0.0.1:8025:8025
 
@@ -78,16 +78,16 @@
 #     build:
 #       args:
 #         <<: *x-build-args
-#   mailhog:
+#   mailpit:
 #     networks:
 #       - default
 #       - pontsun
 #     labels:
 #       - 'traefik.enable=true'
-#       - 'traefik.http.routers.{{ cookiecutter.project_slug }}_mailhog.entrypoints=http,https'
-#       - 'traefik.http.routers.{{ cookiecutter.project_slug }}_mailhog.middlewares=https_redirect@file'
-#       - 'traefik.http.routers.{{ cookiecutter.project_slug }}_mailhog.rule=Host(`{{ subdomain }}-mail.docker.test`)'
-#       - 'traefik.http.services.{{ cookiecutter.project_slug }}_mailhog.loadbalancer.server.port=8025'
+#       - 'traefik.http.routers.{{ cookiecutter.project_slug }}_mailpit.entrypoints=http,https'
+#       - 'traefik.http.routers.{{ cookiecutter.project_slug }}_mailpit.middlewares=https_redirect@file'
+#       - 'traefik.http.routers.{{ cookiecutter.project_slug }}_mailpit.rule=Host(`{{ subdomain }}-mail.docker.test`)'
+#       - 'traefik.http.services.{{ cookiecutter.project_slug }}_mailpit.loadbalancer.server.port=8025'
 #
 # networks:
 #   pontsun:
