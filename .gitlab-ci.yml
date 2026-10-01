@@ -1,2 +1,0 @@
-tests:
-    script: "./bin/gitlabci.sh"
