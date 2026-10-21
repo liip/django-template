@@ -1,4 +1,4 @@
-FROM python:3.11-bookworm
+FROM python:3.13-trixie
 
 RUN set -x; \
     export DEBIAN_FRONTEND=noninteractive \
@@ -11,10 +11,10 @@ RUN set -x; \
         bash-completion postgresql-client \
     && rm -rf /var/lib/apt/lists/*
 
-ENV NODE_VERSION="20.18.0"
+ENV NODE_VERSION="24.22.0"
 ENV NVM_DIR="/opt/nvm"
 RUN mkdir "$NVM_DIR" \
-    && curl https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash \
+    && curl https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.5/install.sh | bash \
     && . $NVM_DIR/nvm.sh \
     && nvm install $NODE_VERSION
 
