@@ -30,13 +30,13 @@ with `{{ '{{' }}`.
 
 The generated project is a Django app served via Docker Compose with:
 
-- **`backend`** — Python 3.11 + Django, Vite integration through `django_vite`,
-  `debug_toolbar` and `django_extensions` in dev. Settings split into
-  `config/settings/{base,dev,test}.py`; env-driven via `dj_database_url` and
-  `dj_email_url`. `runserver` is the default command (auto-restart loop in
-  `docker-compose.yml`).
-- **`frontend`** — Node 20 + Vite (port 3000), Tailwind v4, ESLint + Prettier.
-- **`db`** — Postgres 15.
+- **`backend`** — Python 3.13 + Django (5.2 LTS), Vite integration through
+  `django_vite`, `debug_toolbar` and `django_extensions` in dev. Settings
+  split into `config/settings/{base,dev,test}.py`; env-driven via
+  `dj_database_url` and `dj_email_url`. `runserver` is the default command
+  (auto-restart loop in `docker-compose.yml`).
+- **`frontend`** — Node 24 + Vite (port 3000), Tailwind v4, ESLint + Prettier.
+- **`db`** — Postgres 17.
 - **`mailpit`** — fake SMTP/UI for outgoing mail (`EMAIL_URL` points at it).
 
 Apps inside the project package:
@@ -51,9 +51,9 @@ Per-project tooling:
   `translate`, `npm`. Aliases like `t`, `l`, `fix`, `mm`, `m`, `f` exist.
 - `scripts/run_tests.sh` — used by CI; runs `check_migrations.sh` (dry-run
   `makemigrations` against sqlite), then `pytest`, then `ruff check`.
-- `pyproject.toml` — ruff config (`select = ["F", "I", "T10"]`, line length 88).
-- `setup.cfg` — pytest config: `DJANGO_SETTINGS_MODULE = …config.settings.test`,
-  coverage enabled on the project package.
+- `pyproject.toml` — ruff config (`select = ["F", "I", "T10"]`, line length 88)
+  and pytest config (`[tool.pytest.ini_options]`: `DJANGO_SETTINGS_MODULE = …config.settings.test`,
+  coverage enabled on the project package via `addopts`).
 
 ## How to test changes to the template
 

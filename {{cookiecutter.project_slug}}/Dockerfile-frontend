@@ -1,4 +1,4 @@
-FROM node:20-bookworm
+FROM node:24-trixie
 
 ARG USER_ID=1000
 ARG GROUP_ID=1000
