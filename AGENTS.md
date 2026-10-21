@@ -51,9 +51,9 @@ Per-project tooling:
   `translate`, `npm`. Aliases like `t`, `l`, `fix`, `mm`, `m`, `f` exist.
 - `scripts/run_tests.sh` — used by CI; runs `check_migrations.sh` (dry-run
   `makemigrations` against sqlite), then `pytest`, then `ruff check`.
-- `pyproject.toml` — ruff config (`select = ["F", "I", "T10"]`, line length 88).
-- `setup.cfg` — pytest config: `DJANGO_SETTINGS_MODULE = …config.settings.test`,
-  coverage enabled on the project package.
+- `pyproject.toml` — ruff config (`select = ["F", "I", "T10"]`, line length 88)
+  and pytest config (`[tool.pytest.ini_options]`: `DJANGO_SETTINGS_MODULE = …config.settings.test`,
+  coverage enabled on the project package via `addopts`).
 
 ## How to test changes to the template
 
